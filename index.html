@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Backlog">
+<meta name="theme-color" content="#08080d">
+<title>The Backlog</title>
+<link rel="manifest" href='data:application/manifest+json,{"name":"The Backlog","short_name":"Backlog","start_url":".","display":"standalone","background_color":"%2308080d","theme_color":"%2308080d","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 fill=%22%2308080d%22/><text x=%2296%22 y=%22130%22 font-size=%22120%22 text-anchor=%22middle%22 fill=%22%23c8a84e%22 font-family=%22monospace%22 font-weight=%22900%22>B</text></svg>","sizes":"192x192","type":"image/svg+xml"},{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect width=%22512%22 height=%22512%22 fill=%22%2308080d%22/><text x=%22256%22 y=%22350%22 font-size=%22320%22 text-anchor=%22middle%22 fill=%22%23c8a84e%22 font-family=%22monospace%22 font-weight=%22900%22>B</text></svg>","sizes":"512x512","type":"image/svg+xml"}]}'>
+<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" fill="%2308080d"/><text x="90" y="120" font-size="110" text-anchor="middle" fill="%23c8a84e" font-family="monospace" font-weight="900">B</text></svg>'>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    background: #08080d;
+    color: #d0cdc5;
+    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+    min-height: 100vh;
+    overscroll-behavior: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body { padding-bottom: env(safe-area-inset-bottom); padding-top: env(safe-area-inset-top); }
+
+  .header {
+    padding: 18px 16px 10px;
+    border-bottom: 1px solid #151520;
+    position: sticky;
+    top: 0;
+    background: #08080d;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header h1 { font-size: 18px; font-weight: 900; color: #c8a84e; letter-spacing: 0.08em; }
+  .header .stats { font-size: 10px; color: #555; margin-top: 3px; }
+  .header .add-btn {
+    background: #1a1628; color: #c8a84e; border: 1px solid #2a2438;
+    width: 36px; height: 36px; border-radius: 8px; font-size: 20px; font-weight: 700;
+    cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center;
+  }
+  .header .add-btn:active { background: #2a2438; }
+
+  .tabs {
+    display: flex; overflow-x: auto;
+    position: sticky; top: 64px; background: #08080d; z-index: 9;
+    border-bottom: 1px solid #151520;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    background: transparent; color: #444; border: none;
+    padding: 10px 14px; font-size: 15px; cursor: pointer;
+    border-bottom: 2px solid transparent; font-family: inherit;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .tab.active { background: #12121a; color: #c8a84e; border-bottom-color: #c8a84e; }
+
+  .content { padding: 14px 16px 100px; }
+  .section-label { font-size: 13px; font-weight: 700; color: #c8a84e; margin-bottom: 3px; }
+  .section-count { font-size: 10px; color: #444; margin-bottom: 12px; }
+  .priority-label {
+    font-size: 9px; color: #c8a84e; text-transform: uppercase;
+    letter-spacing: 0.12em; margin-bottom: 6px;
+  }
+  .priority-block { margin-bottom: 14px; }
+
+  .item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 0; border-bottom: 1px solid #15151f;
+    cursor: pointer; transition: background 0.1s;
+  }
+  .item:active { background: #0e0e16; }
+  .item.long-pressing { background: #16162a; }
+  .checkbox {
+    width: 22px; height: 22px; border-radius: 5px; border: 2px solid #2a2a3a;
+    background: transparent; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s;
+  }
+  .checkbox.done { border-color: #c8a84e; background: #c8a84e; }
+  .checkbox.done::after { content: '✓'; color: #08080d; font-size: 13px; font-weight: 900; }
+  .item-title { font-size: 13px; color: #d0cdc5; line-height: 1.35; }
+  .item.done .item-title { color: #3a3a4a; text-decoration: line-through; }
+
+  .pairing-card {
+    background: #0e0e16; border-radius: 8px; padding: 13px;
+    margin-bottom: 8px; border: 1px solid #1a1a28;
+  }
+  .pairing-name { font-size: 14px; font-weight: 700; color: #c8a84e; margin-bottom: 5px; }
+  .pairing-desc { font-size: 10px; color: #777; line-height: 1.5; margin-bottom: 7px; }
+  .pairing-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .pairing-tag {
+    background: #16162a; color: #999; font-size: 9px;
+    padding: 3px 7px; border-radius: 3px;
+  }
+
+  .pairings-intro { font-size: 11px; color: #666; margin-bottom: 14px; line-height: 1.6; }
+
+  .footer {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, #08080d 40%);
+    padding: 24px 16px 14px; text-align: center;
+    font-size: 9px; color: #333; letter-spacing: 0.08em; text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7); z-index: 100;
+    display: none; align-items: flex-end; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-backdrop.active { display: flex; }
+  .modal {
+    background: #12121a; border: 1px solid #2a2438; border-bottom: none;
+    border-radius: 16px 16px 0 0; padding: 20px 16px 32px;
+    width: 100%; max-width: 500px;
+    animation: slideUp 0.2s ease-out;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-title { font-size: 13px; color: #c8a84e; margin-bottom: 14px; font-weight: 700; }
+  .modal-item-name {
+    font-size: 12px; color: #888; margin-bottom: 16px;
+    padding: 8px 12px; background: #08080d; border-radius: 6px;
+    word-break: break-word;
+  }
+  .modal-action {
+    width: 100%; background: #1a1a28; color: #d0cdc5; border: 1px solid #2a2a3a;
+    padding: 14px 16px; border-radius: 8px; font-size: 13px; cursor: pointer;
+    font-family: inherit; margin-bottom: 8px; text-align: left;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .modal-action:active { background: #2a2a3a; }
+  .modal-action.danger { color: #c44; border-color: #441818; }
+  .modal-action.danger:active { background: #2a1010; }
+  .modal-action-icon { font-size: 16px; width: 22px; text-align: center; }
+  .modal-cancel {
+    margin-top: 12px; background: transparent; color: #666; border: none;
+    width: 100%; padding: 12px; font-size: 12px; cursor: pointer; font-family: inherit;
+  }
+
+  /* Add modal */
+  .modal-input, .modal-select {
+    width: 100%; background: #08080d; color: #d0cdc5;
+    border: 1px solid #2a2a3a; border-radius: 6px;
+    padding: 12px; font-size: 13px; font-family: inherit;
+    margin-bottom: 10px;
+  }
+  .modal-input:focus, .modal-select:focus { outline: none; border-color: #c8a84e; }
+  .modal-submit {
+    width: 100%; background: #c8a84e; color: #08080d; border: none;
+    padding: 14px; border-radius: 8px; font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+  }
+
+  .empty-state { color: #444; font-size: 11px; text-align: center; padding: 30px 16px; }
+
+  .reset-btn {
+    margin-top: 20px; background: #1a0e0e; color: #a44; border: 1px solid #331818;
+    border-radius: 6px; padding: 9px 14px; font-size: 11px; cursor: pointer; font-family: inherit;
+  }
+
+  .toggle-done {
+    background: transparent; border: none; color: #333; font-size: 10px;
+    cursor: pointer; font-family: inherit; padding: 0; margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>THE BACKLOG</h1>
+    <div class="stats" id="stats">Loading...</div>
+  </div>
+  <button class="add-btn" id="addBtn" title="Add new item">+</button>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="content" id="content"></div>
+
+<div class="footer">Max: 1 show · 1 anime · 1 manga · 1 game</div>
+
+<!-- Long-press menu modal -->
+<div class="modal-backdrop" id="actionModal">
+  <div class="modal">
+    <div class="modal-title">Move to...</div>
+    <div class="modal-item-name" id="actionItemName"></div>
+    <button class="modal-action" data-action="currently"><span class="modal-action-icon">🔴</span> Currently Active</button>
+    <button class="modal-action" data-action="onhold"><span class="modal-action-icon">⏸️</span> On Hold</button>
+    <button class="modal-action" data-action="toggle-done"><span class="modal-action-icon">✓</span> <span id="toggleDoneLabel">Mark as done</span></button>
+    <button class="modal-action" data-action="move-other"><span class="modal-action-icon">📦</span> Move to other category...</button>
+    <button class="modal-action danger" data-action="delete"><span class="modal-action-icon">🗑️</span> Delete</button>
+    <button class="modal-cancel" id="actionCancel">Cancel</button>
+  </div>
+</div>
+
+<!-- Move to category modal -->
+<div class="modal-backdrop" id="moveModal">
+  <div class="modal">
+    <div class="modal-title">Move to category</div>
+    <div id="moveCategoryButtons"></div>
+    <button class="modal-cancel" id="moveCancel">Cancel</button>
+  </div>
+</div>
+
+<!-- Add new item modal -->
+<div class="modal-backdrop" id="addModal">
+  <div class="modal">
+    <div class="modal-title">Add new item</div>
+    <input class="modal-input" id="addInput" placeholder="Title (e.g. The Sopranos)" maxlength="100">
+    <select class="modal-select" id="addCategory">
+      <option value="currently">🔴 Currently Active</option>
+      <option value="onhold">⏸️ On Hold</option>
+      <option value="shows">📺 Shows</option>
+      <option value="cartoons">🎭 Cartoons</option>
+      <option value="anime">⛩️ Anime</option>
+      <option value="patreon">🎬 Patreon Queue</option>
+      <option value="manga">📚 Manga</option>
+      <option value="games">🎮 Games</option>
+      <option value="movies">🎞️ Movies</option>
+      <option value="docs">🎥 Documentaries</option>
+      <option value="misc">🎵 Misc</option>
+    </select>
+    <select class="modal-select" id="addType">
+      <option value="normal">Normal</option>
+      <option value="priority">⭐ Priority</option>
+    </select>
+    <button class="modal-submit" id="addSubmit">Add</button>
+    <button class="modal-cancel" id="addCancel">Cancel</button>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'backlog-tracker-v4';
+
+const INITIAL_DATA = {
+  pairings: [
+    { id: 'p1', name: '🗡️ Dark Fantasy / Souls', desc: "Elden Ring + Berserk + Dororo/Vinland Saga. Elden Ring's world IS Berserk.", items: ['Elden Ring','Berserk','Dororo','Vinland Saga'] },
+    { id: 'p2', name: '⚔️ Samurai / Honour', desc: 'Ghost of Tsushima + Vagabond + Blue Eye Samurai/Shogun. Feudal Japan across three media.', items: ['Ghost of Tsushima','Vagabond','Blue Eye Samurai','Shogun'] },
+    { id: 'p3', name: '🧠 Psychological', desc: 'Persona 3 Reload + 20th Century Boys/Homunculus + Monster/Steins;Gate.', items: ['Persona 3 Reload','20th Century Boys','Monster','Steins;Gate'] },
+    { id: 'p4', name: '🎭 Hype Shonen', desc: 'One Piece/Blue Lock + Mob Psycho/Gurren Lagann. Pure adrenaline.', items: ['One Piece','Blue Lock + Ao Ashi','Mob Psycho 100','Gurren Lagann'] },
+    { id: 'p5', name: '🌌 Sci-Fi / Existential', desc: 'NieR: Automata + Fire Punch/All You Need Is Kill + Code Geass.', items: ['NieR: Automata','Fire Punch','Code Geass','Eureka Seven'] },
+    { id: 'p6', name: '🕵️ Crime / Gritty', desc: 'Yakuza 0/Judgement + Sun-Ken Rock/Out + Breaking Bad → BCS.', items: ['Yakuza 0','Sun-Ken Rock','Breaking Bad → BCS'] },
+    { id: 'p7', name: '🏰 KH / Adventure', desc: 'Kingdom Hearts Critical + Magi/Tower of God + Frieren. Childhood reconnection.', items: ['KH 1.5+2.5','Magi / Tower of God','Frieren'] },
+    { id: 'p8', name: '💔 Healing / Reset', desc: 'Pokémon ROMs + Vinland Saga + A Silent Voice → BoJack → Erased → Gurren Lagann rewatch.', items: ['Pokémon ROMs','Vinland Saga','A Silent Voice','BoJack','Erased','Gurren Lagann'] },
+    { id: 'p9', name: '🌍 Society / Revolution', desc: 'Eden of the East + Running Man + Get Out + Squid Game + The Hunt.', items: ['Eden of the East','The Running Man','Get Out','Squid Game','The Hunt (2020)'] },
+  ],
+  categories: {
+    currently: { label: '🔴 CURRENTLY ACTIVE', items: [
+      { id: 'c1', title: 'Gachiakuta w/ Roshi', type: 'patreon', done: false },
+      { id: 'c2', title: 'Paradise w/ YourRage', type: 'patreon', done: false },
+      { id: 'c3', title: 'Dark w/ Roshi', type: 'patreon', done: false },
+      { id: 'c4', title: 'Frieren w/ Roshi', type: 'patreon', done: false },
+      { id: 'c5', title: 'Dr. Stone w/ R&G', type: 'patreon', done: false },
+      { id: 'c6', title: "JoJo's (watching)", type: 'anime', done: false },
+      { id: 'c7', title: 'FF7 Remake (FINISH!)', type: 'game', done: false },
+      { id: 'c8', title: 'One Piece manga (ch.1 reread)', type: 'manga', done: false },
+      { id: 'c9', title: 'Bleach manga (ch.1 reread)', type: 'manga', done: false },
+      { id: 'c10', title: 'Breaking Bad', type: 'show', done: false },
+      { id: 'c11', title: 'Power', type: 'show', done: false },
+      { id: 'c12', title: 'You', type: 'show', done: false },
+      { id: 'c13', title: 'The Boys', type: 'show', done: false },
+      { id: 'c14', title: 'The OA', type: 'show', done: false },
+    ]},
+    onhold: { label: '⏸️ ON HOLD', items: [
+      { id: 'h1', title: 'The 100', type: 'show', done: false },
+      { id: 'h2', title: 'The Last of Us', type: 'show', done: false },
+      { id: 'h3', title: 'Umbrella Academy', type: 'show', done: false },
+      { id: 'h4', title: 'Outer Banks', type: 'show', done: false },
+    ]},
+    shows: { label: '📺 SHOWS', items: [
+      { id: 's1', title: 'Power Book II: Ghost → Kanan → Force', type: 'priority', done: false },
+      { id: 's2', title: 'Better Call Saul (after BB)', type: 'priority', done: false },
+      { id: 's3', title: 'Gen V S2', type: 'priority', done: false },
+      { id: 's4', title: 'Westworld', type: 'priority', done: false },
+      { id: 's5', title: 'Dexter / New Blood / Resurrection', type: 'priority', done: false },
+      { id: 's6', title: 'Mindhunter', type: 'priority', done: false },
+      { id: 's7', title: 'The Night Agent', type: 'priority', done: false },
+      { id: 's8', title: 'One of Us Is Lying', type: 'priority', done: false },
+      { id: 's9', title: 'Ozark', type: 'priority', done: false },
+      { id: 's10', title: 'Narcos', type: 'priority', done: false },
+      { id: 's11', title: 'WandaVision', type: 'normal', done: false },
+      { id: 's12', title: 'I Saw the TV Glow', type: 'normal', done: false },
+      { id: 's13', title: 'Bloodhounds', type: 'normal', done: false },
+      { id: 's14', title: 'The Blacklist', type: 'normal', done: false },
+      { id: 's15', title: 'The Sopranos', type: 'normal', done: false },
+      { id: 's16', title: 'Peaky Blinders', type: 'normal', done: false },
+      { id: 's17', title: 'Euphoria', type: 'normal', done: false },
+      { id: 's18', title: 'How To Get Away With Murder', type: 'normal', done: false },
+      { id: 's19', title: 'The Wire', type: 'normal', done: false },
+      { id: 's20', title: 'Hannibal', type: 'normal', done: false },
+      { id: 's21', title: 'Barry', type: 'normal', done: false },
+      { id: 's22', title: 'Succession (w/ Roshi)', type: 'normal', done: false },
+      { id: 's23', title: 'Baby Reindeer', type: 'normal', done: false },
+      { id: 's24', title: 'The Gentlemen', type: 'normal', done: false },
+      { id: 's25', title: 'Gangs of London', type: 'normal', done: false },
+      { id: 's26', title: 'Adolescence', type: 'normal', done: false },
+      { id: 's27', title: 'Reacher', type: 'normal', done: false },
+      { id: 's28', title: 'The Witcher', type: 'normal', done: false },
+      { id: 's29', title: 'Shogun', type: 'normal', done: false },
+      { id: 's30', title: 'See', type: 'normal', done: false },
+      { id: 's31', title: 'The Last Kingdom', type: 'normal', done: false },
+      { id: 's32', title: 'Vikings', type: 'normal', done: false },
+      { id: 's33', title: 'Sandman', type: 'normal', done: false },
+      { id: 's34', title: 'Bates Motel', type: 'normal', done: false },
+      { id: 's35', title: 'Fallout', type: 'normal', done: false },
+      { id: 's36', title: "The Handmaid's Tale", type: 'normal', done: false },
+      { id: 's37', title: 'Interview with the Vampire', type: 'normal', done: false },
+      { id: 's38', title: 'Them', type: 'normal', done: false },
+      { id: 's39', title: 'Sense8', type: 'normal', done: false },
+      { id: 's40', title: 'Love Island S10/S11/S12', type: 'normal', done: false },
+      { id: 's41', title: 'The Society (rewatch)', type: 'normal', done: false },
+      { id: 's42', title: 'Andor (w/ Roshi)', type: 'normal', done: false },
+      { id: 's43', title: 'Castlevania', type: 'normal', done: false },
+      { id: 's44', title: 'Circle', type: 'normal', done: false },
+      { id: 's45', title: 'Young Justice S1–2', type: 'normal', done: false },
+      { id: 's46', title: 'Manifest', type: 'normal', done: false },
+      { id: 's47', title: 'Walking Dead', type: 'normal', done: false },
+      { id: 's48', title: 'Peacemaker', type: 'normal', done: false },
+      { id: 's49', title: 'Wonder Man', type: 'normal', done: false },
+      { id: 's50', title: "Death's Game", type: 'normal', done: false },
+      { id: 's51', title: 'Cloak & Dagger', type: 'normal', done: false },
+      { id: 's52', title: 'Pantheon', type: 'normal', done: false },
+      { id: 's53', title: 'Justified', type: 'normal', done: false },
+      { id: 's54', title: 'Percy Jackson S2', type: 'normal', done: false },
+      { id: 's55', title: 'Queen of the South', type: 'normal', done: false },
+      { id: 's56', title: 'SAS Training Show (w/ Ovie)', type: 'normal', done: false },
+      { id: 's57', title: 'The Bear (w/ Roshi)', type: 'normal', done: false },
+      { id: 's58', title: 'Welcome to Derry', type: 'normal', done: false },
+      { id: 's59', title: 'Sausage Party: Foodtopia', type: 'normal', done: false },
+    ]},
+    cartoons: { label: '🎭 CARTOONS / NOSTALGIA', items: [
+      { id: 'ct1', title: 'BoJack Horseman', type: 'normal', done: false },
+      { id: 'ct2', title: 'Solar Opposites', type: 'normal', done: false },
+      { id: 'ct3', title: 'Smiling Friends', type: 'normal', done: false },
+      { id: 'ct4', title: 'Power Rangers SPD', type: 'normal', done: false },
+      { id: 'ct5', title: 'Power Rangers Dino Thunder', type: 'normal', done: false },
+      { id: 'ct6', title: 'Power Rangers Jungle Fury', type: 'normal', done: false },
+      { id: 'ct7', title: 'Regular Show (rewatch)', type: 'normal', done: false },
+      { id: 'ct8', title: 'Arthur (rewatch)', type: 'normal', done: false },
+      { id: 'ct9', title: 'Zack & Cody', type: 'normal', done: false },
+      { id: 'ct10', title: 'Family Guy', type: 'normal', done: false },
+      { id: 'ct11', title: 'Total Drama Island', type: 'normal', done: false },
+      { id: 'ct12', title: 'The Batman (animated)', type: 'normal', done: false },
+    ]},
+    anime: { label: '⛩️ ANIME', items: [
+      { id: 'a1', title: 'Monster', type: 'priority', done: false },
+      { id: 'a2', title: 'Frieren (solo)', type: 'priority', done: false },
+      { id: 'a3', title: 'Mob Psycho 100', type: 'priority', done: false },
+      { id: 'a4', title: 'Bunny Girl Senpai', type: 'priority', done: false },
+      { id: 'a5', title: 'Blue Exorcist', type: 'normal', done: false },
+      { id: 'a6', title: 'FLCL', type: 'normal', done: false },
+      { id: 'a7', title: 'Dororo', type: 'normal', done: false },
+      { id: 'a8', title: 'Kingdom', type: 'normal', done: false },
+      { id: 'a9', title: 'Gurren Lagann', type: 'normal', done: false },
+      { id: 'a10', title: 'Code Geass', type: 'normal', done: false },
+      { id: 'a11', title: 'Summertime Rendering', type: 'normal', done: false },
+      { id: 'a12', title: 'High Card', type: 'normal', done: false },
+      { id: 'a13', title: 'Erased', type: 'normal', done: false },
+      { id: 'a14', title: "Takopi's Original Sin", type: 'normal', done: false },
+      { id: 'a15', title: 'Dr. Stone (solo)', type: 'normal', done: false },
+      { id: 'a16', title: 'Summer Hikaru Died', type: 'normal', done: false },
+      { id: 'a17', title: 'Clevatess', type: 'normal', done: false },
+      { id: 'a18', title: 'Eureka Seven', type: 'normal', done: false },
+      { id: 'a19', title: 'Guilty Crown', type: 'normal', done: false },
+      { id: 'a20', title: 'Darker Than Black', type: 'normal', done: false },
+      { id: 'a21', title: 'Hells Paradise', type: 'normal', done: false },
+      { id: 'a22', title: 'Sentenced to be a Hero', type: 'normal', done: false },
+      { id: 'a23', title: 'Heavenly Delusion', type: 'normal', done: false },
+      { id: 'a24', title: 'Fire Force', type: 'normal', done: false },
+      { id: 'a25', title: 'Fate/Strange Fake', type: 'normal', done: false },
+      { id: 'a26', title: 'Black Clover', type: 'normal', done: false },
+      { id: 'a27', title: 'Steins;Gate', type: 'normal', done: false },
+      { id: 'a28', title: 'Bungou Stray Dogs', type: 'normal', done: false },
+      { id: 'a29', title: 'JoJo S5–6', type: 'normal', done: false },
+      { id: 'a30', title: 'Bakuman (rewatch)', type: 'normal', done: false },
+      { id: 'a31', title: 'My Dress-Up Darling', type: 'normal', done: false },
+      { id: 'a32', title: 'Kaguya-sama', type: 'normal', done: false },
+      { id: 'a33', title: 'Oregairu/SNAFU S3', type: 'normal', done: false },
+      { id: 'a34', title: 'Spy Classroom', type: 'normal', done: false },
+      { id: 'a35', title: 'Charlotte', type: 'normal', done: false },
+      { id: 'a36', title: 'Inuyashiki', type: 'normal', done: false },
+      { id: 'a37', title: 'Great Pretender', type: 'normal', done: false },
+      { id: 'a38', title: 'Baki', type: 'normal', done: false },
+      { id: 'a39', title: 'Kekkai Sensen', type: 'normal', done: false },
+      { id: 'a40', title: 'Initial D', type: 'normal', done: false },
+      { id: 'a41', title: 'Fate Series', type: 'normal', done: false },
+      { id: 'a42', title: 'Trigun', type: 'normal', done: false },
+      { id: 'a43', title: 'Yu Yu Hakusho', type: 'normal', done: false },
+      { id: 'a44', title: 'Oshi no Ko S2', type: 'normal', done: false },
+      { id: 'a45', title: 'Blue Box (finish w/ Roshi)', type: 'normal', done: false },
+      { id: 'a46', title: 'Eden of the East (anime rewatch)', type: 'normal', done: false },
+      { id: 'a47', title: 'Classroom of the Elite', type: 'normal', done: false },
+      { id: 'a48', title: 'Gachiakuta (solo)', type: 'normal', done: false },
+      { id: 'a49', title: 'Beck', type: 'normal', done: false },
+      { id: 'a50', title: 'Burn the Witch', type: 'normal', done: false },
+      { id: 'a51', title: 'Orb', type: 'normal', done: false },
+      { id: 'a52', title: 'A Silent Voice (movie)', type: 'normal', done: false },
+    ]},
+    patreon: { label: '🎬 PATREON QUEUE', items: [
+      { id: 'pt1', title: 'Mob Psycho w/ Roshi', type: 'normal', done: false },
+      { id: 'pt2', title: 'Code Geass w/ R&G (finish)', type: 'normal', done: false },
+      { id: 'pt3', title: 'JJK Patreon', type: 'normal', done: false },
+      { id: 'pt4', title: 'Hells Paradise Patreon', type: 'normal', done: false },
+      { id: 'pt5', title: 'Fire Force Patreon', type: 'normal', done: false },
+      { id: 'pt6', title: 'Succession w/ Roshi', type: 'normal', done: false },
+      { id: 'pt7', title: 'It 1990 vs It 2017', type: 'normal', done: false },
+      { id: 'pt8', title: 'Barry w/ Roshi', type: 'normal', done: false },
+      { id: 'pt9', title: 'Heavenly Delusion w/ Roshi', type: 'normal', done: false },
+      { id: 'pt10', title: 'Silo w/ Roshi', type: 'normal', done: false },
+      { id: 'pt11', title: 'Welcome to Derry w/ Roshi', type: 'normal', done: false },
+      { id: 'pt12', title: 'Oshi no Ko w/ Roshi', type: 'normal', done: false },
+      { id: 'pt13', title: 'Summertime Rendering w/ Roshi', type: 'normal', done: false },
+      { id: 'pt14', title: 'Summer Hikaru Died w/ Roshi', type: 'normal', done: false },
+      { id: 'pt15', title: 'Blue Eye Samurai Patreon', type: 'normal', done: false },
+      { id: 'pt16', title: 'SSS with Cory (YouTube)', type: 'normal', done: false },
+      { id: 'pt17', title: 'Re:Zero w/ YaBoyRoshi', type: 'normal', done: false },
+      { id: 'pt18', title: 'Andor w/ Roshi', type: 'normal', done: false },
+      { id: 'pt19', title: 'The Bear w/ Roshi', type: 'normal', done: false },
+      { id: 'pt20', title: 'Sentenced to be a Hero Patreon', type: 'normal', done: false },
+      { id: 'pt21', title: 'Fate/Strange Fake Patreon', type: 'normal', done: false },
+    ]},
+    manga: { label: '📚 MANGA / MANHWA', items: [
+      { id: 'm1', title: 'Hunter x Hunter', type: 'priority', done: false },
+      { id: 'm2', title: 'Blue Lock + Ao Ashi (football pair)', type: 'priority', done: false },
+      { id: 'm3', title: 'Jujutsu Kaisen + sequel', type: 'priority', done: false },
+      { id: 'm4', title: 'Mercenary Enrollment', type: 'normal', done: false },
+      { id: 'm5', title: 'Lookism', type: 'normal', done: false },
+      { id: 'm6', title: 'Wind Breaker', type: 'normal', done: false },
+      { id: 'm7', title: 'Tower of God', type: 'normal', done: false },
+      { id: 'm8', title: 'TBATE', type: 'normal', done: false },
+      { id: 'm9', title: 'FMA & Brotherhood', type: 'normal', done: false },
+      { id: 'm10', title: 'How to Fight', type: 'normal', done: false },
+      { id: 'm11', title: 'My Dearest Self', type: 'normal', done: false },
+      { id: 'm12', title: 'Out', type: 'normal', done: false },
+      { id: 'm13', title: 'Sun-Ken Rock', type: 'normal', done: false },
+      { id: 'm14', title: 'Vagabond', type: 'normal', done: false },
+      { id: 'm15', title: 'Berserk', type: 'normal', done: false },
+      { id: 'm16', title: 'Vinland Saga', type: 'normal', done: false },
+      { id: 'm17', title: 'GAMARAN', type: 'normal', done: false },
+      { id: 'm18', title: '20th Century Boys', type: 'normal', done: false },
+      { id: 'm19', title: 'Homunculus', type: 'normal', done: false },
+      { id: 'm20', title: 'Fire Punch', type: 'normal', done: false },
+      { id: 'm21', title: 'Bibliomania', type: 'normal', done: false },
+      { id: 'm22', title: 'All You Need Is Kill', type: 'normal', done: false },
+      { id: 'm23', title: 'Kamisama no Iutoori', type: 'normal', done: false },
+      { id: 'm24', title: 'Bakuon Rettou', type: 'normal', done: false },
+      { id: 'm25', title: 'Sidooh', type: 'normal', done: false },
+      { id: 'm26', title: 'Demon Slayer', type: 'normal', done: false },
+      { id: 'm27', title: 'Magi', type: 'normal', done: false },
+      { id: 'm28', title: 'Chainsaw Man', type: 'normal', done: false },
+      { id: 'm29', title: 'Be Blues', type: 'normal', done: false },
+      { id: 'm30', title: 'Diamond no Ace', type: 'normal', done: false },
+      { id: 'm31', title: 'Young GTO', type: 'normal', done: false },
+      { id: 'm32', title: 'One Punch Man', type: 'normal', done: false },
+      { id: 'm33', title: 'Bleach Hell arc one-shot', type: 'normal', done: false },
+      { id: 'm34', title: 'Minato one-shot', type: 'normal', done: false },
+      { id: 'm35', title: 'Pokémon Adventures (past Kanto)', type: 'normal', done: false },
+      { id: 'm36', title: "Mum's self-help black book", type: 'normal', done: false },
+    ]},
+    games: { label: '🎮 GAMES', items: [
+      { id: 'g1', title: 'Elden Ring (pair w/ Berserk)', type: 'priority', done: false },
+      { id: 'g2', title: 'Ghost of Tsushima', type: 'priority', done: false },
+      { id: 'g3', title: 'Crisis Core → FF7 Rebirth', type: 'priority', done: false },
+      { id: 'g4', title: 'Sekiro', type: 'normal', done: false },
+      { id: 'g5', title: 'Bloodborne', type: 'normal', done: false },
+      { id: 'g6', title: 'Dark Souls 1–3', type: 'normal', done: false },
+      { id: 'g7', title: 'Lies of P', type: 'normal', done: false },
+      { id: 'g8', title: 'Cyberpunk 2077', type: 'normal', done: false },
+      { id: 'g9', title: "Baldur's Gate III", type: 'normal', done: false },
+      { id: 'g10', title: 'Expedition 33', type: 'normal', done: false },
+      { id: 'g11', title: 'Persona 3 Reload', type: 'normal', done: false },
+      { id: 'g12', title: 'Persona 4 Golden', type: 'normal', done: false },
+      { id: 'g13', title: 'Persona 5 Royal', type: 'normal', done: false },
+      { id: 'g14', title: 'Persona 5 Strikers', type: 'normal', done: false },
+      { id: 'g15', title: 'Metaphor: ReFantazio', type: 'normal', done: false },
+      { id: 'g16', title: 'Xenoblade Chronicles X', type: 'normal', done: false },
+      { id: 'g17', title: 'NieR: Automata', type: 'normal', done: false },
+      { id: 'g18', title: 'Scarlet Nexus', type: 'normal', done: false },
+      { id: 'g19', title: 'Spider-Man 2', type: 'normal', done: false },
+      { id: 'g20', title: 'Judgement', type: 'normal', done: false },
+      { id: 'g21', title: 'Devil May Cry 5', type: 'normal', done: false },
+      { id: 'g22', title: 'Final Fantasy XVI', type: 'normal', done: false },
+      { id: 'g23', title: 'Salt and Sacrifice', type: 'normal', done: false },
+      { id: 'g24', title: 'Neo: TWEWY', type: 'normal', done: false },
+      { id: 'g25', title: 'Yakuza 0', type: 'normal', done: false },
+      { id: 'g26', title: 'God of War (2018)', type: 'normal', done: false },
+      { id: 'g27', title: 'God of War III Remastered', type: 'normal', done: false },
+      { id: 'g28', title: 'Batman Telltale', type: 'normal', done: false },
+      { id: 'g29', title: 'Batman Arkham Knight', type: 'normal', done: false },
+      { id: 'g30', title: 'KH 1.5+2.5 Critical Mode', type: 'normal', done: false },
+      { id: 'g31', title: 'Kingdom Hearts III', type: 'normal', done: false },
+      { id: 'g32', title: 'Tekken 8', type: 'normal', done: false },
+      { id: 'g33', title: 'SF6', type: 'normal', done: false },
+      { id: 'g34', title: 'Detroit: Become Human', type: 'normal', done: false },
+      { id: 'g35', title: 'Disco Elysium', type: 'normal', done: false },
+      { id: 'g36', title: 'Pokémon ROM Hacks', type: 'normal', done: false },
+      { id: 'g37', title: "Yu-Gi-Oh! 5D's", type: 'normal', done: false },
+      { id: 'g38', title: 'Digimon', type: 'normal', done: false },
+      { id: 'g39', title: 'Exit 8', type: 'normal', done: false },
+      { id: 'g40', title: 'Hollow Knight: Silksong (wishlist)', type: 'normal', done: false },
+    ]},
+    movies: { label: '🎞️ MOVIES', items: [
+      { id: 'mv1', title: 'Blade Runner 2049', type: 'priority', done: false },
+      { id: 'mv2', title: 'Tenet', type: 'priority', done: false },
+      { id: 'mv3', title: 'Dune', type: 'priority', done: false },
+      { id: 'mv4', title: 'Fight Club', type: 'priority', done: false },
+      { id: 'mv5', title: 'Goodfellas', type: 'priority', done: false },
+      { id: 'mv6', title: 'Limitless', type: 'priority', done: false },
+      { id: 'mv7', title: 'The Matrix Resurrections', type: 'normal', done: false },
+      { id: 'mv8', title: 'American Beauty', type: 'normal', done: false },
+      { id: 'mv9', title: 'The Talented Mr Ripley', type: 'normal', done: false },
+      { id: 'mv10', title: 'The Breakfast Club', type: 'normal', done: false },
+      { id: 'mv11', title: 'American Pie', type: 'normal', done: false },
+      { id: 'mv12', title: 'A Bronx Tale', type: 'normal', done: false },
+      { id: 'mv13', title: 'Missing (Netflix)', type: 'normal', done: false },
+      { id: 'mv14', title: 'Safety (Disney+)', type: 'normal', done: false },
+      { id: 'mv15', title: 'Cocaine Bear', type: 'normal', done: false },
+      { id: 'mv16', title: 'As Above So Below', type: 'normal', done: false },
+      { id: 'mv17', title: 'Top Gun', type: 'normal', done: false },
+      { id: 'mv18', title: 'Scream 6', type: 'normal', done: false },
+      { id: 'mv19', title: 'Smile 1', type: 'normal', done: false },
+      { id: 'mv20', title: 'What Happened to Monday', type: 'normal', done: false },
+      { id: 'mv21', title: 'Django', type: 'normal', done: false },
+      { id: 'mv22', title: 'Inception', type: 'normal', done: false },
+      { id: 'mv23', title: 'Whiplash', type: 'normal', done: false },
+      { id: 'mv24', title: 'The Truman Show', type: 'normal', done: false },
+      { id: 'mv25', title: 'Walter Mitty', type: 'normal', done: false },
+      { id: 'mv26', title: 'Perks of Being a Wallflower', type: 'normal', done: false },
+      { id: 'mv27', title: 'Midsommar', type: 'normal', done: false },
+      { id: 'mv28', title: 'Chronicle', type: 'normal', done: false },
+      { id: 'mv29', title: 'In Time', type: 'normal', done: false },
+      { id: 'mv30', title: 'Lottery Ticket', type: 'normal', done: false },
+      { id: 'mv31', title: 'The Prestige', type: 'normal', done: false },
+      { id: 'mv32', title: 'Pulp Fiction', type: 'normal', done: false },
+      { id: 'mv33', title: 'He Got Game', type: 'normal', done: false },
+      { id: 'mv34', title: 'Creed III', type: 'normal', done: false },
+      { id: 'mv35', title: '#Alive', type: 'normal', done: false },
+      { id: 'mv36', title: 'Blue Story', type: 'normal', done: false },
+      { id: 'mv37', title: 'Leave the World Behind', type: 'normal', done: false },
+      { id: 'mv38', title: "Get Rich or Die Tryin'", type: 'normal', done: false },
+      { id: 'mv39', title: 'American Psycho', type: 'normal', done: false },
+      { id: 'mv40', title: 'John Wick 1–4', type: 'normal', done: false },
+      { id: 'mv41', title: 'Alien: Romulus', type: 'normal', done: false },
+      { id: 'mv42', title: 'Minority Report', type: 'normal', done: false },
+      { id: 'mv43', title: 'Chronicles of Narnia', type: 'normal', done: false },
+      { id: 'mv44', title: 'Scarface', type: 'normal', done: false },
+      { id: 'mv45', title: 'The Godfather I & II', type: 'normal', done: false },
+      { id: 'mv46', title: 'Taxi Driver', type: 'normal', done: false },
+      { id: 'mv47', title: 'Get Out', type: 'normal', done: false },
+      { id: 'mv48', title: 'Surviving the Game', type: 'normal', done: false },
+      { id: 'mv49', title: 'The Hunt (2020)', type: 'normal', done: false },
+      { id: 'mv50', title: 'Night Patrol 2025', type: 'normal', done: false },
+      { id: 'mv51', title: 'The Odyssey', type: 'normal', done: false },
+      { id: 'mv52', title: 'Election', type: 'normal', done: false },
+      { id: 'mv53', title: 'Magnolia', type: 'normal', done: false },
+      { id: 'mv54', title: 'The Sixth Sense', type: 'normal', done: false },
+      { id: 'mv55', title: 'The Game', type: 'normal', done: false },
+      { id: 'mv56', title: 'The Handmaiden', type: 'normal', done: false },
+      { id: 'mv57', title: 'Identity', type: 'normal', done: false },
+      { id: 'mv58', title: 'The Incredible Hulk', type: 'normal', done: false },
+      { id: 'mv59', title: 'Justice League: Flashpoint', type: 'normal', done: false },
+      { id: 'mv60', title: 'Age of Ultron (rewatch)', type: 'normal', done: false },
+    ]},
+    docs: { label: '🎥 DOCUMENTARIES', items: [
+      { id: 'd1', title: 'Jeen-Yuhs (Kanye)', type: 'normal', done: false },
+      { id: 'd2', title: 'The Last Dance (MJ rewatch)', type: 'normal', done: false },
+      { id: 'd3', title: 'Quiet on Set (Nickelodeon)', type: 'normal', done: false },
+      { id: 'd4', title: '50 Cent / Diddy doc', type: 'normal', done: false },
+    ]},
+    misc: { label: '🎵 MISC / LEARNING', items: [
+      { id: 'x1', title: 'Learn chess', type: 'normal', done: false },
+      { id: 'x2', title: 'Study Black Panthers / revolutionaries', type: 'normal', done: false },
+      { id: 'x3', title: 'KH music on piano', type: 'normal', done: false },
+      { id: 'x4', title: 'Xenogears soundtrack', type: 'normal', done: false },
+      { id: 'x5', title: 'SF2 Yoko Shimomura tracks', type: 'normal', done: false },
+      { id: 'x6', title: 'Super Mario 3D music', type: 'normal', done: false },
+      { id: 'x7', title: 'Stanford CS230 Deep Learning', type: 'normal', done: false },
+    ]},
+  },
+  completed: [
+    'Snowfall','From','Silo','Gen V S1','Game of Thrones','Interstellar',
+    'The Platform','Dragon Ball Sparking Zero','Cobra Kai','Invincible','KAOS',
+    'Lost','Money Heist S5','Rick and Morty','Severance','Squid Game',
+    'Stranger Things','The Peripheral','The Sandman','Re:Zero S3','Konosuba',
+    'Blue Eye Samurai'
+  ]
+};
+
+const TABS = [
+  { key: 'pairings', label: '🍷' },
+  { key: 'currently', label: '🔴' },
+  { key: 'onhold', label: '⏸️' },
+  { key: 'shows', label: '📺' },
+  { key: 'cartoons', label: '🎭' },
+  { key: 'anime', label: '⛩️' },
+  { key: 'patreon', label: '🎬' },
+  { key: 'manga', label: '📚' },
+  { key: 'games', label: '🎮' },
+  { key: 'movies', label: '🎞️' },
+  { key: 'docs', label: '🎥' },
+  { key: 'misc', label: '🎵' },
+  { key: 'done', label: '✅' },
+];
+
+const CATEGORY_LABELS = {
+  shows: '📺 Shows', cartoons: '🎭 Cartoons', anime: '⛩️ Anime',
+  patreon: '🎬 Patreon Queue', manga: '📚 Manga', games: '🎮 Games',
+  movies: '🎞️ Movies', docs: '🎥 Documentaries', misc: '🎵 Misc'
+};
+
+let state = { data: null, activeTab: 'pairings', showCompletedInCategory: false, longPressedItem: null };
+
+function loadData() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      state.data = JSON.parse(stored);
+    } else {
+      state.data = JSON.parse(JSON.stringify(INITIAL_DATA));
+      saveData();
+    }
+  } catch (e) {
+    state.data = JSON.parse(JSON.stringify(INITIAL_DATA));
+  }
+}
+
+function saveData() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data)); }
+  catch (e) { console.error('Save failed', e); }
+}
+
+function findItem(itemId) {
+  for (const catKey of Object.keys(state.data.categories)) {
+    const item = state.data.categories[catKey].items.find(i => i.id === itemId);
+    if (item) return { item, catKey };
+  }
+  return null;
+}
+
+function toggleDone(itemId) {
+  const found = findItem(itemId);
+  if (!found) return;
+  found.item.done = !found.item.done;
+  if (found.item.done) {
+    if (!state.data.completed.includes(found.item.title)) {
+      state.data.completed.push(found.item.title);
+    }
+  } else {
+    state.data.completed = state.data.completed.filter(t => t !== found.item.title);
+  }
+  saveData();
+  render();
+}
+
+function moveItem(itemId, targetCatKey) {
+  const found = findItem(itemId);
+  if (!found || found.catKey === targetCatKey) return;
+  state.data.categories[found.catKey].items = state.data.categories[found.catKey].items.filter(i => i.id !== itemId);
+  state.data.categories[targetCatKey].items.push(found.item);
+  saveData();
+  render();
+}
+
+function deleteItem(itemId) {
+  const found = findItem(itemId);
+  if (!found) return;
+  if (!confirm(`Delete "${found.item.title}"?`)) return;
+  state.data.categories[found.catKey].items = state.data.categories[found.catKey].items.filter(i => i.id !== itemId);
+  state.data.completed = state.data.completed.filter(t => t !== found.item.title);
+  saveData();
+  closeAllModals();
+  render();
+}
+
+function addItem(title, catKey, type) {
+  const id = 'u' + Date.now();
+  const newItem = { id, title, type: type || 'normal', done: false };
+  state.data.categories[catKey].items.push(newItem);
+  saveData();
+  render();
+}
+
+function getStats() {
+  let left = 0;
+  for (const cat of Object.values(state.data.categories)) {
+    left += cat.items.filter(i => !i.done).length;
+  }
+  return { left, done: state.data.completed.length };
+}
+
+function renderTabs() {
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = TABS.map(t => `<button class="tab ${state.activeTab === t.key ? 'active' : ''}" data-tab="${t.key}">${t.label}</button>`).join('');
+  tabsEl.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.activeTab = btn.dataset.tab;
+      state.showCompletedInCategory = false;
+      render();
+    });
+  });
+}
+
+function renderStats() {
+  const { left, done } = getStats();
+  document.getElementById('stats').textContent = `${left} remaining · ${done} done`;
+}
+
+function renderContent() {
+  const contentEl = document.getElementById('content');
+  if (state.activeTab === 'pairings') {
+    contentEl.innerHTML = `
+      <p class="pairings-intro">Pick a vibe. Each pairing combines game + manga + anime that feed into each other.</p>
+      ${state.data.pairings.map(p => `
+        <div class="pairing-card">
+          <div class="pairing-name">${p.name}</div>
+          <div class="pairing-desc">${p.desc}</div>
+          <div class="pairing-tags">${p.items.map(i => `<span class="pairing-tag">${escapeHtml(i)}</span>`).join('')}</div>
+        </div>
+      `).join('')}
+    `;
+    return;
+  }
+
+  if (state.activeTab === 'done') {
+    contentEl.innerHTML = `
+      <div class="section-label">✅ COMPLETED (${state.data.completed.length})</div>
+      <div class="section-count" style="margin-bottom: 14px;"></div>
+      ${state.data.completed.length === 0 ? '<div class="empty-state">Nothing yet. Get watching.</div>' : state.data.completed.map(item => `
+        <div style="padding: 7px 0; border-bottom: 1px solid #0e0e16; font-size: 12px; color: #3a3a4a; text-decoration: line-through;">${escapeHtml(item)}</div>
+      `).join('')}
+      <button class="reset-btn" id="resetBtn">⚠️ Reset to default</button>
+    `;
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      if (confirm('Reset everything back to default? This cannot be undone.')) {
+        state.data = JSON.parse(JSON.stringify(INITIAL_DATA));
+        saveData();
+        render();
+      }
+    });
+    return;
+  }
+
+  const cat = state.data.categories[state.activeTab];
+  if (!cat) { contentEl.innerHTML = ''; return; }
+
+  const priorityItems = cat.items.filter(i => i.type === 'priority' && !i.done);
+  const normalItems = cat.items.filter(i => i.type !== 'priority' && !i.done);
+  const doneItems = cat.items.filter(i => i.done);
+  const total = cat.items.filter(i => !i.done).length;
+
+  let html = `
+    <div class="section-label">${cat.label}</div>
+    <div class="section-count">${total} remaining</div>
+  `;
+
+  if (total === 0 && doneItems.length === 0) {
+    html += '<div class="empty-state">Empty. Tap + to add something.</div>';
+  }
+
+  if (priorityItems.length > 0) {
+    html += `<div class="priority-block"><div class="priority-label">★ Priority</div>${priorityItems.map(itemHtml).join('')}</div>`;
+  }
+  html += normalItems.map(itemHtml).join('');
+
+  if (doneItems.length > 0) {
+    html += `<button class="toggle-done" id="toggleDoneBtn">${state.showCompletedInCategory ? '▾' : '▸'} ${doneItems.length} completed</button>`;
+    if (state.showCompletedInCategory) {
+      html += doneItems.map(itemHtml).join('');
+    }
+  }
+
+  contentEl.innerHTML = html;
+
+  attachItemHandlers();
+  const toggleBtn = document.getElementById('toggleDoneBtn');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      state.showCompletedInCategory = !state.showCompletedInCategory;
+      render();
+    });
+  }
+}
+
+function itemHtml(item) {
+  return `
+    <div class="item ${item.done ? 'done' : ''}" data-id="${item.id}">
+      <div class="checkbox ${item.done ? 'done' : ''}"></div>
+      <div class="item-title">${escapeHtml(item.title)}</div>
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+function attachItemHandlers() {
+  document.querySelectorAll('.item').forEach(el => {
+    let pressTimer = null;
+    let longPressed = false;
+
+    const start = (e) => {
+      longPressed = false;
+      el.classList.add('long-pressing');
+      pressTimer = setTimeout(() => {
+        longPressed = true;
+        el.classList.remove('long-pressing');
+        if (navigator.vibrate) navigator.vibrate(20);
+        openActionModal(el.dataset.id);
+      }, 500);
+    };
+
+    const cancel = () => {
+      el.classList.remove('long-pressing');
+      if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    };
+
+    const tap = (e) => {
+      if (longPressed) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      toggleDone(el.dataset.id);
+    };
+
+    el.addEventListener('touchstart', start, { passive: true });
+    el.addEventListener('touchend', (e) => { cancel(); tap(e); });
+    el.addEventListener('touchmove', cancel);
+    el.addEventListener('touchcancel', cancel);
+    el.addEventListener('mousedown', start);
+    el.addEventListener('mouseup', (e) => { cancel(); tap(e); });
+    el.addEventListener('mouseleave', cancel);
+    el.addEventListener('contextmenu', e => e.preventDefault());
+  });
+}
+
+function openActionModal(itemId) {
+  const found = findItem(itemId);
+  if (!found) return;
+  state.longPressedItem = itemId;
+  document.getElementById('actionItemName').textContent = found.item.title;
+  document.getElementById('toggleDoneLabel').textContent = found.item.done ? 'Mark as not done' : 'Mark as done';
+  document.getElementById('actionModal').classList.add('active');
+}
+
+function closeAllModals() {
+  document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
+  state.longPressedItem = null;
+}
+
+function setupModals() {
+  // Action modal
+  document.querySelectorAll('#actionModal .modal-action').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.dataset.action;
+      const itemId = state.longPressedItem;
+      if (!itemId) return;
+
+      if (action === 'currently') { moveItem(itemId, 'currently'); closeAllModals(); }
+      else if (action === 'onhold') { moveItem(itemId, 'onhold'); closeAllModals(); }
+      else if (action === 'toggle-done') { toggleDone(itemId); closeAllModals(); }
+      else if (action === 'delete') { deleteItem(itemId); }
+      else if (action === 'move-other') { openMoveModal(itemId); }
+    });
+  });
+  document.getElementById('actionCancel').addEventListener('click', closeAllModals);
+  document.getElementById('actionModal').addEventListener('click', e => {
+    if (e.target.id === 'actionModal') closeAllModals();
+  });
+
+  // Move modal
+  const moveButtons = document.getElementById('moveCategoryButtons');
+  moveButtons.innerHTML = Object.entries(CATEGORY_LABELS).map(([key, label]) =>
+    `<button class="modal-action" data-target="${key}">${label}</button>`
+  ).join('');
+  moveButtons.querySelectorAll('.modal-action').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.longPressedItem) {
+        moveItem(state.longPressedItem, btn.dataset.target);
+        closeAllModals();
+      }
+    });
+  });
+  document.getElementById('moveCancel').addEventListener('click', closeAllModals);
+  document.getElementById('moveModal').addEventListener('click', e => {
+    if (e.target.id === 'moveModal') closeAllModals();
+  });
+
+  // Add modal
+  document.getElementById('addBtn').addEventListener('click', () => {
+    document.getElementById('addInput').value = '';
+    if (state.activeTab !== 'pairings' && state.activeTab !== 'done') {
+      document.getElementById('addCategory').value = state.activeTab;
+    }
+    document.getElementById('addModal').classList.add('active');
+    setTimeout(() => document.getElementById('addInput').focus(), 100);
+  });
+  document.getElementById('addSubmit').addEventListener('click', () => {
+    const title = document.getElementById('addInput').value.trim();
+    if (!title) return;
+    const catKey = document.getElementById('addCategory').value;
+    const type = document.getElementById('addType').value;
+    addItem(title, catKey, type);
+    closeAllModals();
+  });
+  document.getElementById('addCancel').addEventListener('click', closeAllModals);
+  document.getElementById('addModal').addEventListener('click', e => {
+    if (e.target.id === 'addModal') closeAllModals();
+  });
+  document.getElementById('addInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('addSubmit').click();
+  });
+}
+
+function openMoveModal(itemId) {
+  document.getElementById('actionModal').classList.remove('active');
+  state.longPressedItem = itemId;
+  document.getElementById('moveModal').classList.add('active');
+}
+
+function render() {
+  renderTabs();
+  renderStats();
+  renderContent();
+}
+
+// Init
+loadData();
+setupModals();
+render();
+
+// Register a minimal service worker for offline (optional, will fail silently if not supported)
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    self.addEventListener('install', e => self.skipWaiting());
+    self.addEventListener('activate', e => self.clients.claim());
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.open('backlog-v1').then(cache =>
+          cache.match(e.request).then(resp => resp || fetch(e.request).then(networkResp => {
+            if (e.request.method === 'GET' && networkResp.ok) cache.put(e.request, networkResp.clone());
+            return networkResp;
+          }).catch(() => cache.match('/')))
+        )
+      );
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+</script>
+</body>
+</html>
