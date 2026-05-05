@@ -240,6 +240,7 @@
 const STORAGE_KEY = 'backlog-tracker-v4';
 
 const INITIAL_DATA = {
+  version: 2,
   pairings: [
     { id: 'p1', name: '🗡️ Dark Fantasy / Souls', desc: "Elden Ring + Berserk + Dororo/Vinland Saga. Elden Ring's world IS Berserk.", items: ['Elden Ring','Berserk','Dororo','Vinland Saga'] },
     { id: 'p2', name: '⚔️ Samurai / Honour', desc: 'Ghost of Tsushima + Vagabond + Blue Eye Samurai/Shogun. Feudal Japan across three media.', items: ['Ghost of Tsushima','Vagabond','Blue Eye Samurai','Shogun'] },
@@ -500,7 +501,17 @@ const INITIAL_DATA = {
       { id: 'g33', title: 'SF6', type: 'normal', done: false },
       { id: 'g34', title: 'Detroit: Become Human', type: 'normal', done: false },
       { id: 'g35', title: 'Disco Elysium', type: 'normal', done: false },
-      { id: 'g36', title: 'Pokémon ROM Hacks', type: 'normal', done: false },
+      { id: 'g36', title: 'Pokémon Renegade Platinum (START HERE)', type: 'priority', done: false },
+      { id: 'g36b', title: 'Pokémon Refined Platinum (Coarse mode)', type: 'normal', done: false },
+      { id: 'g36c', title: 'Pokémon Xenoverse', type: 'normal', done: false },
+      { id: 'g36d', title: 'Pokémon Sors', type: 'normal', done: false },
+      { id: 'g36e', title: 'Pokémon Saiph', type: 'normal', done: false },
+      { id: 'g36f', title: 'Pokémon Definitive Platinum', type: 'normal', done: false },
+      { id: 'g36g', title: 'Pokémon Azure Platinum', type: 'normal', done: false },
+      { id: 'g36h', title: 'Pokémon Platinum Redux', type: 'normal', done: false },
+      { id: 'g36i', title: 'Pokémon Empire', type: 'normal', done: false },
+      { id: 'g36j', title: 'Pokémon Gamma Emerald', type: 'normal', done: false },
+      { id: 'g36k', title: 'PokeMMO (start: Sinnoh → all regions)', type: 'normal', done: false },
       { id: 'g37', title: "Yu-Gi-Oh! 5D's", type: 'normal', done: false },
       { id: 'g38', title: 'Digimon', type: 'normal', done: false },
       { id: 'g39', title: 'Exit 8', type: 'normal', done: false },
@@ -617,11 +628,68 @@ const CATEGORY_LABELS = {
 
 let state = { data: null, activeTab: 'pairings', showCompletedInCategory: false, longPressedItem: null };
 
+// MIGRATIONS — each one upgrades data from version N-1 to N.
+// Add new migrations to the END of this array. NEVER modify existing ones.
+// They run automatically on load if user's data version is behind.
+const MIGRATIONS = [
+  // Migration to v2: Replace generic "Pokémon ROM Hacks" entry with individual checkable hacks + PokeMMO
+  function migrateToV2(data) {
+    if (!data.categories || !data.categories.games) return data;
+    const games = data.categories.games;
+    const romHackIndex = games.items.findIndex(i => i.title === 'Pokémon ROM Hacks');
+    const newItems = [
+      { id: 'g36', title: 'Pokémon Renegade Platinum (START HERE)', type: 'priority', done: false },
+      { id: 'g36b', title: 'Pokémon Refined Platinum (Coarse mode)', type: 'normal', done: false },
+      { id: 'g36c', title: 'Pokémon Xenoverse', type: 'normal', done: false },
+      { id: 'g36d', title: 'Pokémon Sors', type: 'normal', done: false },
+      { id: 'g36e', title: 'Pokémon Saiph', type: 'normal', done: false },
+      { id: 'g36f', title: 'Pokémon Definitive Platinum', type: 'normal', done: false },
+      { id: 'g36g', title: 'Pokémon Azure Platinum', type: 'normal', done: false },
+      { id: 'g36h', title: 'Pokémon Platinum Redux', type: 'normal', done: false },
+      { id: 'g36i', title: 'Pokémon Empire', type: 'normal', done: false },
+      { id: 'g36j', title: 'Pokémon Gamma Emerald', type: 'normal', done: false },
+      { id: 'g36k', title: 'PokeMMO (start: Sinnoh → all regions)', type: 'normal', done: false },
+    ];
+    // Only add items the user doesn't already have (by title)
+    const existingTitles = new Set(games.items.map(i => i.title));
+    const itemsToAdd = newItems.filter(i => !existingTitles.has(i.title));
+    if (romHackIndex !== -1) {
+      // Replace the generic entry
+      games.items.splice(romHackIndex, 1, ...itemsToAdd);
+    } else {
+      // User already removed it or it never existed — just append new ones
+      games.items.push(...itemsToAdd);
+    }
+    return data;
+  },
+];
+
+function runMigrations(data) {
+  const currentVersion = data.version || 1;
+  for (let i = currentVersion; i < MIGRATIONS.length + 1; i++) {
+    try {
+      data = MIGRATIONS[i - 1](data);
+      data.version = i + 1;
+    } catch (e) {
+      console.error('Migration ' + i + ' failed:', e);
+    }
+  }
+  return data;
+}
+
 function loadData() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       state.data = JSON.parse(stored);
+      // Ensure version exists for old data
+      if (!state.data.version) state.data.version = 1;
+      // Run any pending migrations (non-destructive)
+      const targetVersion = MIGRATIONS.length + 1;
+      if (state.data.version < targetVersion) {
+        state.data = runMigrations(state.data);
+        saveData();
+      }
     } else {
       state.data = JSON.parse(JSON.stringify(INITIAL_DATA));
       saveData();
