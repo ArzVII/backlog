@@ -75,10 +75,18 @@
   }
   .item:active { background: #0e0e16; }
   .item.long-pressing { background: #16162a; }
+  .checkbox-wrap {
+    padding: 4px 8px 4px 4px;
+    margin: -4px -4px -4px -4px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .checkbox-wrap:active { background: #1a1a2a; border-radius: 6px; }
   .checkbox {
     width: 22px; height: 22px; border-radius: 5px; border: 2px solid #2a2a3a;
     background: transparent; display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; transition: all 0.2s;
+    transition: all 0.2s;
+    pointer-events: none;
   }
   .checkbox.done { border-color: #c8a84e; background: #c8a84e; }
   .checkbox.done::after { content: '✓'; color: #08080d; font-size: 13px; font-weight: 900; }
@@ -240,12 +248,12 @@
 const STORAGE_KEY = 'backlog-tracker-v4';
 
 const INITIAL_DATA = {
-  version: 2,
+  version: 4,
   pairings: [
     { id: 'p1', name: '🗡️ Dark Fantasy / Souls', desc: "Elden Ring + Berserk + Dororo/Vinland Saga. Elden Ring's world IS Berserk.", items: ['Elden Ring','Berserk','Dororo','Vinland Saga'] },
     { id: 'p2', name: '⚔️ Samurai / Honour', desc: 'Ghost of Tsushima + Vagabond + Blue Eye Samurai/Shogun. Feudal Japan across three media.', items: ['Ghost of Tsushima','Vagabond','Blue Eye Samurai','Shogun'] },
-    { id: 'p3', name: '🧠 Psychological', desc: 'Persona 3 Reload + 20th Century Boys/Homunculus + Monster/Steins;Gate.', items: ['Persona 3 Reload','20th Century Boys','Monster','Steins;Gate'] },
-    { id: 'p4', name: '🎭 Hype Shonen', desc: 'One Piece/Blue Lock + Mob Psycho/Gurren Lagann. Pure adrenaline.', items: ['One Piece','Blue Lock + Ao Ashi','Mob Psycho 100','Gurren Lagann'] },
+    { id: 'p3', name: '🧠 Psychological', desc: 'Mind games, paranoia, what is real. Persona 3 Reload + Monster + Steins;Gate + Homunculus + 20th Century Boys + Hannibal + Mr. Robot.', items: ['Persona 3 Reload','Monster','Steins;Gate','Homunculus','20th Century Boys','Hannibal','Mr. Robot'] },
+    { id: 'p4', name: '🎭 Identity / Becoming', desc: 'Reconstructing who you are. Disco Elysium + Persona 5 Royal anchor. Mob Psycho, Bunny Girl Senpai, The OA, American Beauty, Fight Club, Talented Mr Ripley.', items: ['Disco Elysium','Persona 5 Royal','Mob Psycho 100','Bunny Girl Senpai','The OA','American Beauty','Fight Club','The Talented Mr Ripley'] },
     { id: 'p5', name: '🌌 Sci-Fi / Existential', desc: 'NieR: Automata + Fire Punch/All You Need Is Kill + Code Geass.', items: ['NieR: Automata','Fire Punch','Code Geass','Eureka Seven'] },
     { id: 'p6', name: '🕵️ Crime / Gritty', desc: 'Yakuza 0/Judgement + Sun-Ken Rock/Out + Breaking Bad → BCS.', items: ['Yakuza 0','Sun-Ken Rock','Breaking Bad → BCS'] },
     { id: 'p7', name: '🏰 KH / Adventure', desc: 'Kingdom Hearts Critical + Magi/Tower of God + Frieren. Childhood reconnection.', items: ['KH 1.5+2.5','Magi / Tower of God','Frieren'] },
@@ -335,6 +343,7 @@ const INITIAL_DATA = {
       { id: 's57', title: 'The Bear (w/ Roshi)', type: 'normal', done: false },
       { id: 's58', title: 'Welcome to Derry', type: 'normal', done: false },
       { id: 's59', title: 'Sausage Party: Foodtopia', type: 'normal', done: false },
+      { id: 's60', title: 'Mr. Robot', type: 'priority', done: false },
     ]},
     cartoons: { label: '🎭 CARTOONS / NOSTALGIA', items: [
       { id: 'ct1', title: 'BoJack Horseman', type: 'normal', done: false },
@@ -662,6 +671,55 @@ const MIGRATIONS = [
     }
     return data;
   },
+  // Migration to v3: Replace "Hype Shonen" pairing with "Identity / Becoming" pairing
+  function migrateToV3(data) {
+    if (!data.pairings) return data;
+    const idx = data.pairings.findIndex(p => p.id === 'p4');
+    const newPairing = {
+      id: 'p4',
+      name: '🎭 Identity / Becoming',
+      desc: 'Disco Elysium + Persona 5 Royal anchor. About reconstructing who you are. Pairs with Mob Psycho, Bunny Girl Senpai, Homunculus, 20th Century Boys, The OA, American Beauty/Fight Club/Talented Mr Ripley.',
+      items: ['Disco Elysium','Persona 5 Royal','Mob Psycho 100','Bunny Girl Senpai','Homunculus','20th Century Boys','The OA','American Beauty','Fight Club','The Talented Mr Ripley']
+    };
+    if (idx !== -1) {
+      data.pairings[idx] = newPairing;
+    } else {
+      data.pairings.push(newPairing);
+    }
+    return data;
+  },
+  // Migration to v4: Refine Psychological pairing (add Hannibal + Mr. Robot, keep Homunculus + 20th Century Boys here),
+  // remove Homunculus + 20th Century Boys from Identity pairing to clean up overlap. Also add Mr. Robot to Shows list.
+  function migrateToV4(data) {
+    if (data.pairings) {
+      const psychIdx = data.pairings.findIndex(p => p.id === 'p3');
+      const idIdx = data.pairings.findIndex(p => p.id === 'p4');
+      if (psychIdx !== -1) {
+        data.pairings[psychIdx] = {
+          id: 'p3',
+          name: '🧠 Psychological',
+          desc: 'Mind games, paranoia, what is real. Persona 3 Reload + Monster + Steins;Gate + Homunculus + 20th Century Boys + Hannibal + Mr. Robot.',
+          items: ['Persona 3 Reload','Monster','Steins;Gate','Homunculus','20th Century Boys','Hannibal','Mr. Robot']
+        };
+      }
+      if (idIdx !== -1) {
+        data.pairings[idIdx] = {
+          id: 'p4',
+          name: '🎭 Identity / Becoming',
+          desc: 'Reconstructing who you are. Disco Elysium + Persona 5 Royal anchor. Mob Psycho, Bunny Girl Senpai, The OA, American Beauty, Fight Club, Talented Mr Ripley.',
+          items: ['Disco Elysium','Persona 5 Royal','Mob Psycho 100','Bunny Girl Senpai','The OA','American Beauty','Fight Club','The Talented Mr Ripley']
+        };
+      }
+    }
+    // Add Mr. Robot to Shows if not already present
+    if (data.categories && data.categories.shows) {
+      const hasRobot = data.categories.shows.items.some(i => i.title === 'Mr. Robot');
+      if (!hasRobot) {
+        data.categories.shows.items.push({ id: 's60', title: 'Mr. Robot', type: 'priority', done: false });
+      }
+    }
+    return data;
+  },
 ];
 
 function runMigrations(data) {
@@ -859,7 +917,7 @@ function renderContent() {
 function itemHtml(item) {
   return `
     <div class="item ${item.done ? 'done' : ''}" data-id="${item.id}">
-      <div class="checkbox ${item.done ? 'done' : ''}"></div>
+      <div class="checkbox-wrap" data-checkbox="1"><div class="checkbox ${item.done ? 'done' : ''}"></div></div>
       <div class="item-title">${escapeHtml(item.title)}</div>
     </div>
   `;
@@ -873,9 +931,12 @@ function attachItemHandlers() {
   document.querySelectorAll('.item').forEach(el => {
     let pressTimer = null;
     let longPressed = false;
+    let startX = 0, startY = 0;
 
     const start = (e) => {
       longPressed = false;
+      const touch = e.touches ? e.touches[0] : e;
+      startX = touch.clientX; startY = touch.clientY;
       el.classList.add('long-pressing');
       pressTimer = setTimeout(() => {
         longPressed = true;
@@ -890,21 +951,37 @@ function attachItemHandlers() {
       if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
     };
 
+    const handleMove = (e) => {
+      const touch = e.touches ? e.touches[0] : e;
+      const dx = Math.abs(touch.clientX - startX);
+      const dy = Math.abs(touch.clientY - startY);
+      // Cancel long-press if user is scrolling
+      if (dx > 8 || dy > 8) cancel();
+    };
+
     const tap = (e) => {
       if (longPressed) {
         e.preventDefault();
         e.stopPropagation();
         return;
       }
-      toggleDone(el.dataset.id);
+      // Find what was tapped: checkbox area → toggle done; title area → open action menu
+      const target = e.target.closest('[data-checkbox]');
+      if (target) {
+        toggleDone(el.dataset.id);
+      } else {
+        // Tapping the title row opens the action menu (where you can also tick done)
+        openActionModal(el.dataset.id);
+      }
     };
 
     el.addEventListener('touchstart', start, { passive: true });
     el.addEventListener('touchend', (e) => { cancel(); tap(e); });
-    el.addEventListener('touchmove', cancel);
+    el.addEventListener('touchmove', handleMove, { passive: true });
     el.addEventListener('touchcancel', cancel);
     el.addEventListener('mousedown', start);
     el.addEventListener('mouseup', (e) => { cancel(); tap(e); });
+    el.addEventListener('mousemove', handleMove);
     el.addEventListener('mouseleave', cancel);
     el.addEventListener('contextmenu', e => e.preventDefault());
   });
