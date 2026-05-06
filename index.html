@@ -965,13 +965,11 @@ function attachItemHandlers() {
         e.stopPropagation();
         return;
       }
-      // Find what was tapped: checkbox area → toggle done; title area → open action menu
+      // Only checkbox area toggles done. Tapping the title does nothing —
+      // long-press anywhere opens the action menu.
       const target = e.target.closest('[data-checkbox]');
       if (target) {
         toggleDone(el.dataset.id);
-      } else {
-        // Tapping the title row opens the action menu (where you can also tick done)
-        openActionModal(el.dataset.id);
       }
     };
 
