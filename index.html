@@ -991,7 +991,11 @@ function openActionModal(itemId) {
   state.longPressedItem = itemId;
   document.getElementById('actionItemName').textContent = found.item.title;
   document.getElementById('toggleDoneLabel').textContent = found.item.done ? 'Mark as not done' : 'Mark as done';
-  document.getElementById('actionModal').classList.add('active');
+  const modal = document.getElementById('actionModal');
+  modal.classList.add('active');
+  // Block taps on modal buttons for 400ms so finger-lift from long-press doesn't trigger a button
+  modal.dataset.blocked = '1';
+  setTimeout(() => { modal.dataset.blocked = ''; }, 400);
 }
 
 function closeAllModals() {
@@ -1000,9 +1004,16 @@ function closeAllModals() {
 }
 
 function setupModals() {
+  const actionModal = document.getElementById('actionModal');
   // Action modal
   document.querySelectorAll('#actionModal .modal-action').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      // Block taps that happen too soon after long-press opened the modal
+      if (actionModal.dataset.blocked === '1') {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
       const action = btn.dataset.action;
       const itemId = state.longPressedItem;
       if (!itemId) return;
@@ -1014,8 +1025,12 @@ function setupModals() {
       else if (action === 'move-other') { openMoveModal(itemId); }
     });
   });
-  document.getElementById('actionCancel').addEventListener('click', closeAllModals);
-  document.getElementById('actionModal').addEventListener('click', e => {
+  document.getElementById('actionCancel').addEventListener('click', (e) => {
+    if (actionModal.dataset.blocked === '1') { e.preventDefault(); e.stopPropagation(); return; }
+    closeAllModals();
+  });
+  actionModal.addEventListener('click', e => {
+    if (actionModal.dataset.blocked === '1') { e.preventDefault(); e.stopPropagation(); return; }
     if (e.target.id === 'actionModal') closeAllModals();
   });
 
