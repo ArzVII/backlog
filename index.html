@@ -68,6 +68,16 @@
   }
   .priority-block { margin-bottom: 14px; }
 
+  .virtual-group-label {
+    font-size: 10px; color: #7a6a3a; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-top: 14px; margin-bottom: 4px;
+    padding-bottom: 4px; border-bottom: 1px solid #1a1a28;
+  }
+  .virtual-group-label:first-child { margin-top: 0; }
+  .item-flag {
+    font-size: 10px; opacity: 0.6; margin-left: 4px;
+  }
+
   .item {
     display: flex; align-items: center; gap: 10px;
     padding: 11px 0; border-bottom: 1px solid #15151f;
@@ -197,12 +207,12 @@
 <!-- Long-press menu modal -->
 <div class="modal-backdrop" id="actionModal">
   <div class="modal">
-    <div class="modal-title">Move to...</div>
+    <div class="modal-title">Actions</div>
     <div class="modal-item-name" id="actionItemName"></div>
-    <button class="modal-action" data-action="currently"><span class="modal-action-icon">🔴</span> Currently Active</button>
-    <button class="modal-action" data-action="onhold"><span class="modal-action-icon">⏸️</span> On Hold</button>
+    <button class="modal-action" data-action="toggle-active"><span class="modal-action-icon">🔴</span> <span id="toggleActiveLabel">Mark as Currently Active</span></button>
+    <button class="modal-action" data-action="toggle-onhold"><span class="modal-action-icon">⏸️</span> <span id="toggleOnholdLabel">Mark as On Hold</span></button>
     <button class="modal-action" data-action="toggle-done"><span class="modal-action-icon">✓</span> <span id="toggleDoneLabel">Mark as done</span></button>
-    <button class="modal-action" data-action="move-other"><span class="modal-action-icon">📦</span> Move to other category...</button>
+    <button class="modal-action" data-action="move-other"><span class="modal-action-icon">📦</span> Move to another category...</button>
     <button class="modal-action danger" data-action="delete"><span class="modal-action-icon">🗑️</span> Delete</button>
     <button class="modal-cancel" id="actionCancel">Cancel</button>
   </div>
@@ -223,8 +233,6 @@
     <div class="modal-title">Add new item</div>
     <input class="modal-input" id="addInput" placeholder="Title (e.g. The Sopranos)" maxlength="100">
     <select class="modal-select" id="addCategory">
-      <option value="currently">🔴 Currently Active</option>
-      <option value="onhold">⏸️ On Hold</option>
       <option value="shows">📺 Shows</option>
       <option value="cartoons">🎭 Cartoons</option>
       <option value="anime">⛩️ Anime</option>
@@ -248,7 +256,7 @@
 const STORAGE_KEY = 'backlog-tracker-v4';
 
 const INITIAL_DATA = {
-  version: 4,
+  version: 5,
   pairings: [
     { id: 'p1', name: '🗡️ Dark Fantasy / Souls', desc: "Elden Ring + Berserk + Dororo/Vinland Saga. Elden Ring's world IS Berserk.", items: ['Elden Ring','Berserk','Dororo','Vinland Saga'] },
     { id: 'p2', name: '⚔️ Samurai / Honour', desc: 'Ghost of Tsushima + Vagabond + Blue Eye Samurai/Shogun. Feudal Japan across three media.', items: ['Ghost of Tsushima','Vagabond','Blue Eye Samurai','Shogun'] },
@@ -261,28 +269,6 @@ const INITIAL_DATA = {
     { id: 'p9', name: '🌍 Society / Revolution', desc: 'Eden of the East + Running Man + Get Out + Squid Game + The Hunt.', items: ['Eden of the East','The Running Man','Get Out','Squid Game','The Hunt (2020)'] },
   ],
   categories: {
-    currently: { label: '🔴 CURRENTLY ACTIVE', items: [
-      { id: 'c1', title: 'Gachiakuta w/ Roshi', type: 'patreon', done: false },
-      { id: 'c2', title: 'Paradise w/ YourRage', type: 'patreon', done: false },
-      { id: 'c3', title: 'Dark w/ Roshi', type: 'patreon', done: false },
-      { id: 'c4', title: 'Frieren w/ Roshi', type: 'patreon', done: false },
-      { id: 'c5', title: 'Dr. Stone w/ R&G', type: 'patreon', done: false },
-      { id: 'c6', title: "JoJo's (watching)", type: 'anime', done: false },
-      { id: 'c7', title: 'FF7 Remake (FINISH!)', type: 'game', done: false },
-      { id: 'c8', title: 'One Piece manga (ch.1 reread)', type: 'manga', done: false },
-      { id: 'c9', title: 'Bleach manga (ch.1 reread)', type: 'manga', done: false },
-      { id: 'c10', title: 'Breaking Bad', type: 'show', done: false },
-      { id: 'c11', title: 'Power', type: 'show', done: false },
-      { id: 'c12', title: 'You', type: 'show', done: false },
-      { id: 'c13', title: 'The Boys', type: 'show', done: false },
-      { id: 'c14', title: 'The OA', type: 'show', done: false },
-    ]},
-    onhold: { label: '⏸️ ON HOLD', items: [
-      { id: 'h1', title: 'The 100', type: 'show', done: false },
-      { id: 'h2', title: 'The Last of Us', type: 'show', done: false },
-      { id: 'h3', title: 'Umbrella Academy', type: 'show', done: false },
-      { id: 'h4', title: 'Outer Banks', type: 'show', done: false },
-    ]},
     shows: { label: '📺 SHOWS', items: [
       { id: 's1', title: 'Power Book II: Ghost → Kanan → Force', type: 'priority', done: false },
       { id: 's2', title: 'Better Call Saul (after BB)', type: 'priority', done: false },
@@ -344,6 +330,15 @@ const INITIAL_DATA = {
       { id: 's58', title: 'Welcome to Derry', type: 'normal', done: false },
       { id: 's59', title: 'Sausage Party: Foodtopia', type: 'normal', done: false },
       { id: 's60', title: 'Mr. Robot', type: 'priority', done: false },
+      { id: 's61', title: 'Breaking Bad', type: 'normal', done: false, active: true },
+      { id: 's62', title: 'Power', type: 'normal', done: false, active: true },
+      { id: 's63', title: 'You', type: 'normal', done: false, active: true },
+      { id: 's64', title: 'The Boys', type: 'normal', done: false, active: true },
+      { id: 's65', title: 'The OA', type: 'normal', done: false, active: true },
+      { id: 's66', title: 'The 100', type: 'normal', done: false, onhold: true },
+      { id: 's67', title: 'The Last of Us', type: 'normal', done: false, onhold: true },
+      { id: 's68', title: 'Umbrella Academy', type: 'normal', done: false, onhold: true },
+      { id: 's69', title: 'Outer Banks', type: 'normal', done: false, onhold: true },
     ]},
     cartoons: { label: '🎭 CARTOONS / NOSTALGIA', items: [
       { id: 'ct1', title: 'BoJack Horseman', type: 'normal', done: false },
@@ -388,7 +383,7 @@ const INITIAL_DATA = {
       { id: 'a26', title: 'Black Clover', type: 'normal', done: false },
       { id: 'a27', title: 'Steins;Gate', type: 'normal', done: false },
       { id: 'a28', title: 'Bungou Stray Dogs', type: 'normal', done: false },
-      { id: 'a29', title: 'JoJo S5–6', type: 'normal', done: false },
+      { id: 'a29', title: 'JoJo S5–6', type: 'normal', done: false, active: true },
       { id: 'a30', title: 'Bakuman (rewatch)', type: 'normal', done: false },
       { id: 'a31', title: 'My Dress-Up Darling', type: 'normal', done: false },
       { id: 'a32', title: 'Kaguya-sama', type: 'normal', done: false },
@@ -435,8 +430,15 @@ const INITIAL_DATA = {
       { id: 'pt19', title: 'The Bear w/ Roshi', type: 'normal', done: false },
       { id: 'pt20', title: 'Sentenced to be a Hero Patreon', type: 'normal', done: false },
       { id: 'pt21', title: 'Fate/Strange Fake Patreon', type: 'normal', done: false },
+      { id: 'pt22', title: 'Gachiakuta w/ Roshi', type: 'normal', done: false, active: true },
+      { id: 'pt23', title: 'Paradise w/ YourRage', type: 'normal', done: false, active: true },
+      { id: 'pt24', title: 'Dark w/ Roshi', type: 'normal', done: false, active: true },
+      { id: 'pt25', title: 'Frieren w/ Roshi', type: 'normal', done: false, active: true },
+      { id: 'pt26', title: 'Dr. Stone w/ R&G', type: 'normal', done: false, active: true },
     ]},
     manga: { label: '📚 MANGA / MANHWA', items: [
+      { id: 'm0a', title: 'One Piece (rereading ch.1)', type: 'priority', done: false, active: true },
+      { id: 'm0b', title: 'Bleach (rereading ch.1)', type: 'priority', done: false, active: true },
       { id: 'm1', title: 'Hunter x Hunter', type: 'priority', done: false },
       { id: 'm2', title: 'Blue Lock + Ao Ashi (football pair)', type: 'priority', done: false },
       { id: 'm3', title: 'Jujutsu Kaisen + sequel', type: 'priority', done: false },
@@ -475,6 +477,7 @@ const INITIAL_DATA = {
       { id: 'm36', title: "Mum's self-help black book", type: 'normal', done: false },
     ]},
     games: { label: '🎮 GAMES', items: [
+      { id: 'g0', title: 'FF7 Remake (FINISH!)', type: 'priority', done: false, active: true },
       { id: 'g1', title: 'Elden Ring (pair w/ Berserk)', type: 'priority', done: false },
       { id: 'g2', title: 'Ghost of Tsushima', type: 'priority', done: false },
       { id: 'g3', title: 'Crisis Core → FF7 Rebirth', type: 'priority', done: false },
@@ -635,6 +638,12 @@ const CATEGORY_LABELS = {
   movies: '🎞️ Movies', docs: '🎥 Documentaries', misc: '🎵 Misc'
 };
 
+// Used in Currently Active and On Hold views to show what type each item is
+const CATEGORY_EMOJIS = {
+  shows: '📺', cartoons: '🎭', anime: '⛩️', patreon: '🎬',
+  manga: '📚', games: '🎮', movies: '🎞️', docs: '🎥', misc: '🎵'
+};
+
 let state = { data: null, activeTab: 'pairings', showCompletedInCategory: false, longPressedItem: null };
 
 // MIGRATIONS — each one upgrades data from version N-1 to N.
@@ -720,6 +729,57 @@ const MIGRATIONS = [
     }
     return data;
   },
+  // Migration to v5: Convert "currently" and "onhold" categories from real categories into
+  // active/onhold flags on items in their home categories. Items keep their home and gain a flag.
+  function migrateToV5(data) {
+    if (!data.categories) return data;
+
+    // Map of item types to their home category keys
+    const typeToCategory = {
+      'patreon': 'patreon',
+      'anime': 'anime',
+      'game': 'games',
+      'manga': 'manga',
+      'show': 'shows',
+      'movie': 'movies',
+      'doc': 'docs',
+      'cartoon': 'cartoons',
+      'misc': 'misc'
+    };
+
+    function processFlagged(sourceCategoryKey, flag) {
+      const source = data.categories[sourceCategoryKey];
+      if (!source) return;
+      for (const item of source.items) {
+        if (item.done) continue; // skip done items, they're in completed list
+        const homeKey = typeToCategory[item.type] || 'shows';
+        const home = data.categories[homeKey];
+        if (!home) continue;
+        // Try to find matching item in home category (by title or by stripping common qualifiers)
+        const normalize = (t) => t.toLowerCase().replace(/\s*\([^)]*\)/g, '').replace(/\s*w\/.*$/, '').trim();
+        const normTitle = normalize(item.title);
+        let match = home.items.find(i => normalize(i.title) === normTitle);
+        if (match) {
+          match[flag] = true;
+        } else {
+          // Add item to home category with flag set
+          const newId = 'mig5_' + sourceCategoryKey + '_' + item.id;
+          const newItem = { id: newId, title: item.title, type: item.type === 'patreon' ? 'normal' : (item.type === 'priority' ? 'priority' : 'normal'), done: false };
+          newItem[flag] = true;
+          home.items.push(newItem);
+        }
+      }
+    }
+
+    processFlagged('currently', 'active');
+    processFlagged('onhold', 'onhold');
+
+    // Remove the old categories
+    delete data.categories.currently;
+    delete data.categories.onhold;
+
+    return data;
+  },
 ];
 
 function runMigrations(data) {
@@ -775,12 +835,26 @@ function toggleDone(itemId) {
   if (!found) return;
   found.item.done = !found.item.done;
   if (found.item.done) {
+    // Marking done clears active/onhold flags
+    found.item.active = false;
+    found.item.onhold = false;
     if (!state.data.completed.includes(found.item.title)) {
       state.data.completed.push(found.item.title);
     }
   } else {
     state.data.completed = state.data.completed.filter(t => t !== found.item.title);
   }
+  saveData();
+  render();
+}
+
+function toggleFlag(itemId, flag) {
+  const found = findItem(itemId);
+  if (!found) return;
+  found.item[flag] = !found.item[flag];
+  // active and onhold are mutually exclusive — turning one on turns the other off
+  if (found.item[flag] && flag === 'active') found.item.onhold = false;
+  if (found.item[flag] && flag === 'onhold') found.item.active = false;
   saveData();
   render();
 }
@@ -873,6 +947,46 @@ function renderContent() {
     return;
   }
 
+  // Virtual views: currently / onhold aggregate flagged items from all categories
+  if (state.activeTab === 'currently' || state.activeTab === 'onhold') {
+    const flag = state.activeTab === 'currently' ? 'active' : 'onhold';
+    const label = state.activeTab === 'currently' ? '🔴 CURRENTLY ACTIVE' : '⏸️ ON HOLD';
+    // Collect all items with this flag set, tagged with their home category
+    const flagged = [];
+    for (const [catKey, cat] of Object.entries(state.data.categories)) {
+      for (const item of cat.items) {
+        if (item[flag] && !item.done) {
+          flagged.push({ item, catKey });
+        }
+      }
+    }
+    // Group by category for cleaner display
+    const byCat = {};
+    for (const f of flagged) {
+      if (!byCat[f.catKey]) byCat[f.catKey] = [];
+      byCat[f.catKey].push(f.item);
+    }
+    let html = `
+      <div class="section-label">${label}</div>
+      <div class="section-count">${flagged.length} ${state.activeTab === 'currently' ? 'in rotation' : 'paused'}</div>
+    `;
+    if (flagged.length === 0) {
+      html += `<div class="empty-state">Nothing here yet. Long-press any item in a category and tap "${state.activeTab === 'currently' ? 'Mark as Currently Active' : 'Mark as On Hold'}".</div>`;
+    } else {
+      // Show items grouped by their home category
+      const catOrder = ['patreon', 'shows', 'anime', 'manga', 'games', 'movies', 'cartoons', 'docs', 'misc'];
+      for (const catKey of catOrder) {
+        if (!byCat[catKey]) continue;
+        html += `<div class="virtual-group-label">${CATEGORY_EMOJIS[catKey]} ${CATEGORY_LABELS[catKey].replace(/^.\s*/, '')}</div>`;
+        html += byCat[catKey].map(itemHtml).join('');
+      }
+    }
+    contentEl.innerHTML = html;
+    attachItemHandlers();
+    return;
+  }
+
+  // Regular category view
   const cat = state.data.categories[state.activeTab];
   if (!cat) { contentEl.innerHTML = ''; return; }
 
@@ -915,10 +1029,13 @@ function renderContent() {
 }
 
 function itemHtml(item) {
+  const flags = [];
+  if (item.active) flags.push('<span class="item-flag flag-active" title="Currently Active">🔴</span>');
+  else if (item.onhold) flags.push('<span class="item-flag flag-onhold" title="On Hold">⏸️</span>');
   return `
     <div class="item ${item.done ? 'done' : ''}" data-id="${item.id}">
       <div class="checkbox-wrap" data-checkbox="1"><div class="checkbox ${item.done ? 'done' : ''}"></div></div>
-      <div class="item-title">${escapeHtml(item.title)}</div>
+      <div class="item-title">${escapeHtml(item.title)}${flags.length ? ' ' + flags.join('') : ''}</div>
     </div>
   `;
 }
@@ -991,6 +1108,8 @@ function openActionModal(itemId) {
   state.longPressedItem = itemId;
   document.getElementById('actionItemName').textContent = found.item.title;
   document.getElementById('toggleDoneLabel').textContent = found.item.done ? 'Mark as not done' : 'Mark as done';
+  document.getElementById('toggleActiveLabel').textContent = found.item.active ? 'Remove from Currently Active' : 'Mark as Currently Active';
+  document.getElementById('toggleOnholdLabel').textContent = found.item.onhold ? 'Remove from On Hold' : 'Mark as On Hold';
   const modal = document.getElementById('actionModal');
   modal.classList.add('active');
   // Block taps on modal buttons for 400ms so finger-lift from long-press doesn't trigger a button
@@ -1018,8 +1137,8 @@ function setupModals() {
       const itemId = state.longPressedItem;
       if (!itemId) return;
 
-      if (action === 'currently') { moveItem(itemId, 'currently'); closeAllModals(); }
-      else if (action === 'onhold') { moveItem(itemId, 'onhold'); closeAllModals(); }
+      if (action === 'toggle-active') { toggleFlag(itemId, 'active'); closeAllModals(); }
+      else if (action === 'toggle-onhold') { toggleFlag(itemId, 'onhold'); closeAllModals(); }
       else if (action === 'toggle-done') { toggleDone(itemId); closeAllModals(); }
       else if (action === 'delete') { deleteItem(itemId); }
       else if (action === 'move-other') { openMoveModal(itemId); }
@@ -1055,7 +1174,9 @@ function setupModals() {
   // Add modal
   document.getElementById('addBtn').addEventListener('click', () => {
     document.getElementById('addInput').value = '';
-    if (state.activeTab !== 'pairings' && state.activeTab !== 'done') {
+    // Pre-select category based on current tab, but only if it's a real category (not pairings/done/currently/onhold)
+    const virtualTabs = ['pairings', 'done', 'currently', 'onhold'];
+    if (!virtualTabs.includes(state.activeTab)) {
       document.getElementById('addCategory').value = state.activeTab;
     }
     document.getElementById('addModal').classList.add('active');
