@@ -256,17 +256,19 @@
 const STORAGE_KEY = 'backlog-tracker-v4';
 
 const INITIAL_DATA = {
-  version: 5,
+  version: 9,
   pairings: [
-    { id: 'p1', name: '🗡️ Dark Fantasy / Souls', desc: "Elden Ring + Berserk + Dororo/Vinland Saga. Elden Ring's world IS Berserk.", items: ['Elden Ring','Berserk','Dororo','Vinland Saga'] },
-    { id: 'p2', name: '⚔️ Samurai / Honour', desc: 'Ghost of Tsushima + Vagabond + Blue Eye Samurai/Shogun. Feudal Japan across three media.', items: ['Ghost of Tsushima','Vagabond','Blue Eye Samurai','Shogun'] },
-    { id: 'p3', name: '🧠 Psychological', desc: 'Mind games, paranoia, what is real. Persona 3 Reload + Monster + Steins;Gate + Homunculus + 20th Century Boys + Hannibal + Mr. Robot.', items: ['Persona 3 Reload','Monster','Steins;Gate','Homunculus','20th Century Boys','Hannibal','Mr. Robot'] },
-    { id: 'p4', name: '🎭 Identity / Becoming', desc: 'Reconstructing who you are. Disco Elysium + Persona 5 Royal anchor. Mob Psycho, Bunny Girl Senpai, The OA, American Beauty, Fight Club, Talented Mr Ripley.', items: ['Disco Elysium','Persona 5 Royal','Mob Psycho 100','Bunny Girl Senpai','The OA','American Beauty','Fight Club','The Talented Mr Ripley'] },
-    { id: 'p5', name: '🌌 Sci-Fi / Existential', desc: 'NieR: Automata + Fire Punch/All You Need Is Kill + Code Geass.', items: ['NieR: Automata','Fire Punch','Code Geass','Eureka Seven'] },
-    { id: 'p6', name: '🕵️ Crime / Gritty', desc: 'Yakuza 0/Judgement + Sun-Ken Rock/Out + Breaking Bad → BCS.', items: ['Yakuza 0','Sun-Ken Rock','Breaking Bad → BCS'] },
-    { id: 'p7', name: '🏰 KH / Adventure', desc: 'Kingdom Hearts Critical + Magi/Tower of God + Frieren. Childhood reconnection.', items: ['KH 1.5+2.5','Magi / Tower of God','Frieren'] },
-    { id: 'p8', name: '💔 Healing / Reset', desc: 'Pokémon ROMs + Vinland Saga + A Silent Voice → BoJack → Erased → Gurren Lagann rewatch.', items: ['Pokémon ROMs','Vinland Saga','A Silent Voice','BoJack','Erased','Gurren Lagann'] },
-    { id: 'p9', name: '🌍 Society / Revolution', desc: 'Eden of the East + Running Man + Get Out + Squid Game + The Hunt.', items: ['Eden of the East','The Running Man','Get Out','Squid Game','The Hunt (2020)'] },
+    { id: 'p1', name: '🗡️ Dark Fantasy / Souls', desc: "Elden Ring + Berserk + Dororo. Elden Ring's world IS Berserk.", items: ['Elden Ring','Berserk','Dororo'] },
+    { id: 'p2', name: '⚔️ Samurai / Honour', desc: 'Ghost of Tsushima + Vagabond + Gamaran + Blue Eye Samurai/Shogun. Feudal Japan, swords, honour.', items: ['Ghost of Tsushima','Vagabond','GAMARAN','Blue Eye Samurai','Shogun'] },
+    { id: 'p3', name: '🧠 Psychological', desc: 'Mind games, paranoia, what is real. Persona 3 Reload + Monster + Homunculus + Hannibal + Mindhunter.', items: ['Persona 3 Reload','Monster','Homunculus','Hannibal','Mindhunter'] },
+    { id: 'p4', name: '🎭 Identity / Becoming', desc: 'Reconstructing who you are. Disco Elysium + Persona 5 Royal anchor. Mob Psycho, Bunny Girl Senpai, The OA, Severance, American Beauty, Fight Club, Talented Mr Ripley.', items: ['Disco Elysium','Persona 5 Royal','Mob Psycho 100','Bunny Girl Senpai','The OA','Severance','American Beauty','Fight Club','The Talented Mr Ripley'] },
+    { id: 'p5', name: '🌌 Sci-Fi / Existential', desc: 'NieR: Automata + Detroit: Become Human + Fire Punch + All You Need Is Kill + Code Geass + Steins;Gate + Eureka Seven.', items: ['NieR: Automata','Detroit: Become Human','Fire Punch','All You Need Is Kill','Code Geass','Steins;Gate','Eureka Seven'] },
+    { id: 'p6', name: '🕵️ Crime / Gritty', desc: 'Yakuza 0/Judgement + Sun-Ken Rock/Out + My Dearest Self + Breaking Bad → BCS + The Wire.', items: ['Yakuza 0','Sun-Ken Rock','My Dearest Self','Breaking Bad → BCS','The Wire'] },
+    { id: 'p7', name: '🏰 Adventure + No.1s', desc: 'My peaks. KH2 (fav game ever) + FMA:B (fav anime ever, reading manga 1st time) + Frieren (the anime that dethroned it) + Magi (top 5, reading to see the ending) + Chrono Trigger.', items: ['Kingdom Hearts 2 Critical','FMA Brotherhood / manga','Frieren','Magi','Chrono Trigger'] },
+    { id: 'p8', name: '💔 Healing / Reset', desc: 'Vinland Saga + March Comes In Like a Lion + A Silent Voice → BoJack → Erased → Gurren Lagann rewatch.', items: ['Vinland Saga','March Comes In Like a Lion','A Silent Voice','BoJack','Erased','Gurren Lagann'] },
+    { id: 'p9', name: '🌍 Society / Revolution', desc: 'Systems, power, revolution, who really runs things. Eden of the East + Running Man + Squid Game + The Hunt + 20th Century Boys + Mr. Robot + Andor + Liar Game + Cyberpunk 2077 + society/corruption video essays.', items: ['Eden of the East','The Running Man','Squid Game','The Hunt (2020)','20th Century Boys','Mr. Robot','Andor','Liar Game','Cyberpunk 2077','society/corruption video essays'] },
+    { id: 'p14', name: '⚽ Sports', desc: 'Pure competition, teamwork, the drive to be the best. Anime + manga + shows + movies. Catch up on Blue Lock + Ao Ashi together.', items: ['Blue Lock (anime)','Blue Lock','Ao Ashi','Be Blues','Diamond no Ace','Safety (Disney+)'] },
+    { id: 'p17', name: '🎮 Childhood Reconnection', desc: 'Reclaiming the things that made me, me. KH, nostalgia, inner-kid stuff, Pokémon.', items: ['Kingdom Hearts (KH2 + CoM + Re:Coded)','Ocarina of Time','Pokémon ROMs','KH music on piano','throwback cartoons'] },
   ],
   categories: {
     shows: { label: '📺 SHOWS', items: [
@@ -407,6 +409,7 @@ const INITIAL_DATA = {
       { id: 'a50', title: 'Burn the Witch', type: 'normal', done: false },
       { id: 'a51', title: 'Orb', type: 'normal', done: false },
       { id: 'a52', title: 'A Silent Voice (movie)', type: 'normal', done: false },
+      { id: 'a53', title: 'March Comes In Like a Lion', type: 'normal', done: false },
     ]},
     patreon: { label: '🎬 PATREON QUEUE', items: [
       { id: 'pt1', title: 'Mob Psycho w/ Roshi', type: 'normal', done: false },
@@ -475,6 +478,7 @@ const INITIAL_DATA = {
       { id: 'm34', title: 'Minato one-shot', type: 'normal', done: false },
       { id: 'm35', title: 'Pokémon Adventures (past Kanto)', type: 'normal', done: false },
       { id: 'm36', title: "Mum's self-help black book", type: 'normal', done: false },
+      { id: 'm37', title: 'Liar Game', type: 'normal', done: false },
     ]},
     games: { label: '🎮 GAMES', items: [
       { id: 'g0', title: 'FF7 Remake (FINISH!)', type: 'priority', done: false, active: true },
@@ -528,6 +532,7 @@ const INITIAL_DATA = {
       { id: 'g38', title: 'Digimon', type: 'normal', done: false },
       { id: 'g39', title: 'Exit 8', type: 'normal', done: false },
       { id: 'g40', title: 'Hollow Knight: Silksong (wishlist)', type: 'normal', done: false },
+      { id: 'g41', title: 'Chrono Trigger', type: 'normal', done: false },
     ]},
     movies: { label: '🎞️ MOVIES', items: [
       { id: 'mv1', title: 'Blade Runner 2049', type: 'priority', done: false },
@@ -778,6 +783,128 @@ const MIGRATIONS = [
     delete data.categories.currently;
     delete data.categories.onhold;
 
+    return data;
+  },
+  // Migration to v6: Add 8 new deeper vibe pairings (Weight of the World, Mastery, Underdog,
+  // Genius/Death Game, On The Pitch, Comfy, Conspiracy, Childhood Reconnection)
+  function migrateToV6(data) {
+    if (!data.pairings) return data;
+    const newPairings = [
+      { id: 'p10', name: '⚖️ Weight of the World', desc: 'The world was built on something wrong; an ordinary person must carry the knowledge. Slow-burn, moral weight, buried truth. Your June stack lives here.', items: ['Disco Elysium','Detroit: Become Human','FMA Brotherhood','Frieren','Dark','20th Century Boys','Monster','Vinland Saga'] },
+      { id: 'p11', name: '🥋 Mastery / The Grind', desc: 'Single-minded pursuit of getting good at one thing. Feeds the gym/MMA/piano side.', items: ['Sekiro','Whiplash','Cobra Kai','Vagabond','Hajime no Ippo','How to Fight'] },
+      { id: 'p12', name: '🏆 Underdog / Climb', desc: 'Starting from nothing, clawing up through obsession and belief. Motivation fuel.', items: ['Persona 5 Royal','Mob Psycho 100','Gurren Lagann','One Piece','Blue Lock','Ao Ashi','Tower of God','Lookism'] },
+      { id: 'p13', name: '🎯 Genius / Death Game', desc: 'Trapped in high-stakes loops where intellect and resilience are the only way out.', items: ['Persona 5 Royal','Disco Elysium','Re:Zero','Adolescence','All You Need Is Kill','Kamisama no Iutoori','GAMARAN'] },
+      { id: 'p14', name: '⚽ On The Pitch', desc: 'Sports. Pure competition, teamwork, the drive to be the best. Catch up on Blue Lock + Ao Ashi together.', items: ['Blue Lock (anime)','Blue Lock','Ao Ashi','Be Blues','Diamond no Ace'] },
+      { id: 'p15', name: '🌙 Comfy / Rest Day', desc: 'No stakes. Just warmth. Childhood-blanket energy for genuine days off.', items: ['Pokémon ROMs','Frieren','Bunny Girl Senpai','Kaguya-sama','BoJack Horseman','Regular Show','Arthur'] },
+      { id: 'p16', name: '🕵️‍♂️ Conspiracy / Corruption', desc: 'Real-world systems, power, who really runs things. Give the rabbit-hole a home so it is intentional, not a doomscroll.', items: ['society/corruption video essays','20th Century Boys','Mr. Robot'] },
+      { id: 'p17', name: '🎮 Childhood Reconnection', desc: 'Reclaiming the things that made me, me. KH, nostalgia, inner-kid stuff.', items: ['Kingdom Hearts (KH2 + CoM + Re:Coded)','Ocarina of Time','KH music on piano','throwback cartoons'] },
+    ];
+    // Only add pairings that don't already exist (by id)
+    const existingIds = new Set(data.pairings.map(p => p.id));
+    for (const p of newPairings) {
+      if (!existingIds.has(p.id)) data.pairings.push(p);
+    }
+    return data;
+  },
+  // Migration to v7: Refine pairings based on user QA.
+  // Remove Vinland Saga from Dark Fantasy; move 20th Century Boys + Mr Robot from Psychological to Society;
+  // rename KH/Adventure -> Adventure + No.1s (add Magi); remove Get Out from Society + add video essays;
+  // rename On The Pitch -> Sports (add Safety); delete Mastery, Underdog, Genius/Death Game, Comfy, Conspiracy.
+  function migrateToV7(data) {
+    if (!data.pairings) return data;
+
+    // Delete removed pairings
+    const removeIds = new Set(['p11', 'p12', 'p13', 'p15', 'p16']);
+    data.pairings = data.pairings.filter(p => !removeIds.has(p.id));
+
+    // Update specific pairings
+    for (const p of data.pairings) {
+      if (p.id === 'p1') {
+        p.desc = "Elden Ring + Berserk + Dororo. Elden Ring's world IS Berserk.";
+        p.items = ['Elden Ring','Berserk','Dororo'];
+      } else if (p.id === 'p2') {
+        p.desc = 'Ghost of Tsushima + Vagabond + Gamaran + Blue Eye Samurai/Shogun. Feudal Japan, swords, honour.';
+        p.items = ['Ghost of Tsushima','Vagabond','GAMARAN','Blue Eye Samurai','Shogun'];
+      } else if (p.id === 'p3') {
+        p.desc = 'Mind games, paranoia, what is real. Persona 3 Reload + Monster + Steins;Gate + Homunculus + Hannibal.';
+        p.items = ['Persona 3 Reload','Monster','Steins;Gate','Homunculus','Hannibal'];
+      } else if (p.id === 'p7') {
+        p.name = '🏰 Adventure + No.1s';
+        p.desc = 'My peaks. KH2 (fav game ever) + FMA:B (fav anime ever, reading manga 1st time) + Frieren (the anime that dethroned it) + Magi (top 5, reading to see the ending).';
+        p.items = ['Kingdom Hearts 2 Critical','FMA Brotherhood / manga','Frieren','Magi'];
+      } else if (p.id === 'p9') {
+        p.name = '🌍 Society / Revolution';
+        p.desc = 'Systems, power, revolution, who really runs things. Eden of the East + Running Man + Squid Game + The Hunt + 20th Century Boys + Mr. Robot + society/corruption video essays.';
+        p.items = ['Eden of the East','The Running Man','Squid Game','The Hunt (2020)','20th Century Boys','Mr. Robot','society/corruption video essays'];
+      } else if (p.id === 'p14') {
+        p.name = '⚽ Sports';
+        p.desc = 'Pure competition, teamwork, the drive to be the best. Anime + manga + shows + movies. Catch up on Blue Lock + Ao Ashi together.';
+        p.items = ['Blue Lock (anime)','Blue Lock','Ao Ashi','Be Blues','Diamond no Ace','Safety (Disney+)'];
+      }
+    }
+    return data;
+  },
+  // Migration to v8: Remove Weight of the World; move Steins;Gate + Detroit to Sci-Fi (add All You Need Is Kill explicitly);
+  // move Pokémon ROMs from Healing to Childhood Reconnection; add Severance to Identity; add Mindhunter to Psychological;
+  // add Andor + Liar Game + Cyberpunk 2077 to Society; add March Comes In Like a Lion to Healing.
+  function migrateToV8(data) {
+    if (!data.pairings) return data;
+
+    // Remove Weight of the World
+    data.pairings = data.pairings.filter(p => p.id !== 'p10');
+
+    for (const p of data.pairings) {
+      if (p.id === 'p3') {
+        p.name = '🧠 Psychological';
+        p.desc = 'Mind games, paranoia, what is real. Persona 3 Reload + Monster + Homunculus + Hannibal + Mindhunter.';
+        p.items = ['Persona 3 Reload','Monster','Homunculus','Hannibal','Mindhunter'];
+      } else if (p.id === 'p4') {
+        p.desc = 'Reconstructing who you are. Disco Elysium + Persona 5 Royal anchor. Mob Psycho, Bunny Girl Senpai, The OA, Severance, American Beauty, Fight Club, Talented Mr Ripley.';
+        p.items = ['Disco Elysium','Persona 5 Royal','Mob Psycho 100','Bunny Girl Senpai','The OA','Severance','American Beauty','Fight Club','The Talented Mr Ripley'];
+      } else if (p.id === 'p5') {
+        p.desc = 'NieR: Automata + Detroit: Become Human + Fire Punch + All You Need Is Kill + Code Geass + Steins;Gate + Eureka Seven.';
+        p.items = ['NieR: Automata','Detroit: Become Human','Fire Punch','All You Need Is Kill','Code Geass','Steins;Gate','Eureka Seven'];
+      } else if (p.id === 'p8') {
+        p.desc = 'Vinland Saga + March Comes In Like a Lion + A Silent Voice → BoJack → Erased → Gurren Lagann rewatch.';
+        p.items = ['Vinland Saga','March Comes In Like a Lion','A Silent Voice','BoJack','Erased','Gurren Lagann'];
+      } else if (p.id === 'p9') {
+        p.desc = 'Systems, power, revolution, who really runs things. Eden of the East + Running Man + Squid Game + The Hunt + 20th Century Boys + Mr. Robot + Andor + Liar Game + Cyberpunk 2077 + society/corruption video essays.';
+        p.items = ['Eden of the East','The Running Man','Squid Game','The Hunt (2020)','20th Century Boys','Mr. Robot','Andor','Liar Game','Cyberpunk 2077','society/corruption video essays'];
+      } else if (p.id === 'p17') {
+        p.desc = 'Reclaiming the things that made me, me. KH, nostalgia, inner-kid stuff, Pokémon.';
+        p.items = ['Kingdom Hearts (KH2 + CoM + Re:Coded)','Ocarina of Time','Pokémon ROMs','KH music on piano','throwback cartoons'];
+      }
+    }
+    return data;
+  },
+  // Migration to v9: Add Chrono Trigger to Adventure+No.1s; add The Wire + My Dearest Self to Crime/Gritty.
+  // Also add missing tickable items to the database: Liar Game (manga), March Comes In Like a Lion (anime), Chrono Trigger (games).
+  function migrateToV9(data) {
+    if (data.pairings) {
+      for (const p of data.pairings) {
+        if (p.id === 'p7') {
+          p.desc = 'My peaks. KH2 (fav game ever) + FMA:B (fav anime ever, reading manga 1st time) + Frieren (the anime that dethroned it) + Magi (top 5, reading to see the ending) + Chrono Trigger.';
+          p.items = ['Kingdom Hearts 2 Critical','FMA Brotherhood / manga','Frieren','Magi','Chrono Trigger'];
+        } else if (p.id === 'p6') {
+          p.desc = 'Yakuza 0/Judgement + Sun-Ken Rock/Out + My Dearest Self + Breaking Bad → BCS + The Wire.';
+          p.items = ['Yakuza 0','Sun-Ken Rock','My Dearest Self','Breaking Bad → BCS','The Wire'];
+        }
+      }
+    }
+    // Add missing tickable items to their home categories (only if not already present)
+    if (data.categories) {
+      const additions = [
+        { cat: 'manga', item: { id: 'm37', title: 'Liar Game', type: 'normal', done: false } },
+        { cat: 'anime', item: { id: 'a53', title: 'March Comes In Like a Lion', type: 'normal', done: false } },
+        { cat: 'games', item: { id: 'g41', title: 'Chrono Trigger', type: 'normal', done: false } },
+      ];
+      for (const { cat, item } of additions) {
+        if (data.categories[cat]) {
+          const exists = data.categories[cat].items.some(i => i.title === item.title);
+          if (!exists) data.categories[cat].items.push(item);
+        }
+      }
+    }
     return data;
   },
 ];
