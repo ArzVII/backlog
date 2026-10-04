@@ -182,6 +182,20 @@
     border-radius: 6px; padding: 9px 14px; font-size: 11px; cursor: pointer; font-family: inherit;
   }
 
+  .backup-block {
+    margin-top: 24px; padding: 13px; background: #0e0e16;
+    border: 1px solid #1a1a28; border-radius: 8px;
+  }
+  .backup-label { font-size: 13px; font-weight: 700; color: #c8a84e; margin-bottom: 5px; }
+  .backup-hint { font-size: 10px; color: #777; line-height: 1.5; margin-bottom: 10px; }
+  .backup-row { display: flex; gap: 8px; }
+  .backup-btn {
+    flex: 1; background: #1a1628; color: #c8a84e; border: 1px solid #2a2438;
+    border-radius: 8px; padding: 14px; font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+  }
+  .backup-btn:active { background: #2a2438; }
+
   .toggle-done {
     background: transparent; border: none; color: #333; font-size: 10px;
     cursor: pointer; font-family: inherit; padding: 0; margin-top: 16px;
@@ -256,17 +270,17 @@
 const STORAGE_KEY = 'backlog-tracker-v4';
 
 const INITIAL_DATA = {
-  version: 11,
+  version: 12,
   pairings: [
     { id: 'p1', name: '🗡️ Dark Fantasy / Souls', desc: "Elden Ring + Berserk + Dororo. Elden Ring's world IS Berserk.", items: ['Elden Ring','Berserk','Dororo'] },
     { id: 'p2', name: '⚔️ Samurai / Honour', desc: 'Ghost of Tsushima + Vagabond + Gamaran + Blue Eye Samurai/Shogun. Feudal Japan, swords, honour.', items: ['Ghost of Tsushima','Vagabond','GAMARAN','Blue Eye Samurai','Shogun'] },
     { id: 'p3', name: '🧠 Psychological', desc: 'Mind games, paranoia, what is real. Persona 3 Reload + Monster + Homunculus + Hannibal + Mindhunter.', items: ['Persona 3 Reload','Monster','Homunculus','Hannibal','Mindhunter'] },
     { id: 'p4', name: '🎭 Identity / Becoming', desc: 'Reconstructing who you are. Disco Elysium + Persona 5 Royal anchor. Mob Psycho, Bunny Girl Senpai, The OA, Severance, American Beauty, Fight Club, Talented Mr Ripley.', items: ['Disco Elysium','Persona 5 Royal','Mob Psycho 100','Bunny Girl Senpai','The OA','Severance','American Beauty','Fight Club','The Talented Mr Ripley'] },
-    { id: 'p5', name: '🌌 Sci-Fi / Existential', desc: 'NieR: Automata + Detroit: Become Human + Fire Punch + All You Need Is Kill + Code Geass + Steins;Gate + Eureka Seven.', items: ['NieR: Automata','Detroit: Become Human','Fire Punch','All You Need Is Kill','Code Geass','Steins;Gate','Eureka Seven'] },
+    { id: 'p5', name: '🌌 Sci-Fi / Existential', desc: 'NieR: Automata + Detroit: Become Human + Fire Punch + All You Need Is Kill + Code Geass + Steins;Gate + Eureka Seven + Silo.', items: ['NieR: Automata','Detroit: Become Human','Fire Punch','All You Need Is Kill','Code Geass','Steins;Gate','Eureka Seven','Silo'] },
     { id: 'p6', name: '🕵️ Crime / Gritty', desc: 'Yakuza 0/Judgement + Sun-Ken Rock/Out + My Dearest Self + Breaking Bad → BCS + The Wire.', items: ['Yakuza 0','Sun-Ken Rock','My Dearest Self','Breaking Bad → BCS','The Wire'] },
-    { id: 'p7', name: '🏰 Adventure + No.1s', desc: 'My peaks. KH2 (fav game ever) + FMA:B (fav anime ever, reading manga 1st time) + Frieren (the anime that dethroned it) + Magi (top 5, reading to see the ending) + Chrono Trigger.', items: ['Kingdom Hearts 2 Critical','FMA Brotherhood / manga','Frieren','Magi','Chrono Trigger'] },
+    { id: 'p7', name: '🏰 Adventure + No.1s', desc: 'My peaks. KH2 (fav game ever) + FMA:B (fav anime ever, reading manga 1st time) + Frieren (the anime that dethroned it) + Magi (top 5, reading to see the ending) + Chrono Trigger + Daemons of the Shadow Realm (Arakawa\'s new one).', items: ['Kingdom Hearts 2 Critical','FMA Brotherhood / manga','Frieren','Magi','Chrono Trigger','Daemons of the Shadow Realm'] },
     { id: 'p8', name: '💔 Healing / Reset', desc: 'Vinland Saga + March Comes In Like a Lion + A Silent Voice → BoJack → Erased → Gurren Lagann rewatch.', items: ['Vinland Saga','March Comes In Like a Lion','A Silent Voice','BoJack','Erased','Gurren Lagann'] },
-    { id: 'p9', name: '🌍 Society / Revolution', desc: 'Systems, power, revolution, who really runs things. Eden of the East + Running Man + Squid Game + The Hunt + 20th Century Boys + Mr. Robot + Andor + Liar Game + Nippon Sangoku + Cyberpunk 2077 + society/corruption video essays.', items: ['Eden of the East','The Running Man','Squid Game','The Hunt (2020)','20th Century Boys','Mr. Robot','Andor','Liar Game','Nippon Sangoku','Cyberpunk 2077','society/corruption video essays'] },
+    { id: 'p9', name: '🌍 Society / Revolution', desc: 'Systems, power, revolution, who really runs things. Eden of the East + Running Man + Squid Game + The Hunt + 20th Century Boys + Mr. Robot + Andor + Liar Game + Nippon Sangoku + House of the Dragon + Cyberpunk 2077 + society/corruption video essays.', items: ['Eden of the East','The Running Man','Squid Game','The Hunt (2020)','20th Century Boys','Mr. Robot','Andor','Liar Game','Nippon Sangoku','House of the Dragon','Cyberpunk 2077','society/corruption video essays'] },
     { id: 'p14', name: '⚽ Sports', desc: 'Pure competition, teamwork, the drive to be the best. Anime + manga + shows + movies. Catch up on Blue Lock + Ao Ashi together.', items: ['Blue Lock (anime)','Blue Lock','Ao Ashi','Be Blues','Diamond no Ace','Safety (Disney+)'] },
     { id: 'p17', name: '🎮 Childhood Reconnection', desc: 'Reclaiming the things that made me, me. KH, nostalgia, inner-kid stuff, Pokémon.', items: ['Kingdom Hearts (KH2 + CoM + Re:Coded)','Ocarina of Time','Pokémon ROMs','KH music on piano','throwback cartoons'] },
   ],
@@ -341,6 +355,9 @@ const INITIAL_DATA = {
       { id: 's67', title: 'The Last of Us', type: 'normal', done: false, onhold: true },
       { id: 's68', title: 'Umbrella Academy', type: 'normal', done: false, onhold: true },
       { id: 's69', title: 'Outer Banks', type: 'normal', done: false, onhold: true },
+      { id: 's70', title: "Widow's Bay", type: 'normal', done: false },
+      { id: 's71', title: 'House of the Dragon', type: 'normal', done: false },
+      { id: 's72', title: 'Silo S3', type: 'normal', done: false },
     ]},
     cartoons: { label: '🎭 CARTOONS / NOSTALGIA', items: [
       { id: 'ct1', title: 'BoJack Horseman', type: 'normal', done: false },
@@ -411,6 +428,7 @@ const INITIAL_DATA = {
       { id: 'a52', title: 'A Silent Voice (movie)', type: 'normal', done: false },
       { id: 'a53', title: 'March Comes In Like a Lion', type: 'normal', done: false },
       { id: 'a54', title: 'Nippon Sangoku', type: 'normal', done: false },
+      { id: 'a55', title: 'Daemons of the Shadow Realm', type: 'normal', done: false },
     ]},
     patreon: { label: '🎬 PATREON QUEUE', items: [
       { id: 'pt1', title: 'Mob Psycho w/ Roshi', type: 'normal', done: false },
@@ -958,6 +976,40 @@ const MIGRATIONS = [
     }
     return data;
   },
+  // Migration to v12: Add Widow's Bay, House of the Dragon, Silo S3 (shows) + Daemons of the Shadow Realm (anime),
+  // and slot House of the Dragon into Society/Revolution, Silo into Sci-Fi, Daemons into Adventure + No.1s.
+  function migrateToV12(data) {
+    if (data.pairings) {
+      const pairingAdds = [
+        { id: 'p5', title: 'Silo', desc: 'NieR: Automata + Detroit: Become Human + Fire Punch + All You Need Is Kill + Code Geass + Steins;Gate + Eureka Seven + Silo.' },
+        { id: 'p7', title: 'Daemons of the Shadow Realm', desc: "My peaks. KH2 (fav game ever) + FMA:B (fav anime ever, reading manga 1st time) + Frieren (the anime that dethroned it) + Magi (top 5, reading to see the ending) + Chrono Trigger + Daemons of the Shadow Realm (Arakawa's new one)." },
+        { id: 'p9', title: 'House of the Dragon', before: 'Cyberpunk 2077', desc: 'Systems, power, revolution, who really runs things. Eden of the East + Running Man + Squid Game + The Hunt + 20th Century Boys + Mr. Robot + Andor + Liar Game + Nippon Sangoku + House of the Dragon + Cyberpunk 2077 + society/corruption video essays.' },
+      ];
+      for (const add of pairingAdds) {
+        const p = data.pairings.find(x => x.id === add.id);
+        if (!p || p.items.includes(add.title)) continue;
+        const idx = add.before ? p.items.indexOf(add.before) : -1;
+        if (idx !== -1) p.items.splice(idx, 0, add.title);
+        else p.items.push(add.title);
+        p.desc = add.desc;
+      }
+    }
+    if (data.categories) {
+      const additions = [
+        { cat: 'shows', item: { id: 's70', title: "Widow's Bay", type: 'normal', done: false } },
+        { cat: 'shows', item: { id: 's71', title: 'House of the Dragon', type: 'normal', done: false } },
+        { cat: 'shows', item: { id: 's72', title: 'Silo S3', type: 'normal', done: false } },
+        { cat: 'anime', item: { id: 'a55', title: 'Daemons of the Shadow Realm', type: 'normal', done: false } },
+      ];
+      for (const { cat, item } of additions) {
+        if (data.categories[cat]) {
+          const exists = data.categories[cat].items.some(i => i.title === item.title);
+          if (!exists) data.categories[cat].items.push(item);
+        }
+      }
+    }
+    return data;
+  },
 ];
 
 function runMigrations(data) {
@@ -991,8 +1043,52 @@ function loadData() {
       saveData();
     }
   } catch (e) {
+    // Stash unreadable data under a separate key so the next save can't overwrite it
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) localStorage.setItem(STORAGE_KEY + '-unreadable-' + Date.now(), raw);
+    } catch (e2) {}
     state.data = JSON.parse(JSON.stringify(INITIAL_DATA));
   }
+}
+
+// Backup: export the whole data object as a .json file, import it back on any device.
+function exportBackup() {
+  const json = JSON.stringify(state.data, null, 2);
+  const now = new Date();
+  const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const filename = `backlog-backup-${date}.json`;
+  const file = new File([json], filename, { type: 'application/json' });
+  // iPhone home-screen apps can't download files directly, so use the share sheet (Save to Files, AirDrop, etc.)
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({ files: [file], title: 'Backlog backup' }).catch(() => {});
+    return;
+  }
+  const url = URL.createObjectURL(file);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function importBackup(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try { data = JSON.parse(reader.result); } catch (e) { alert("That file isn't a Backlog backup."); return; }
+    if (!data || typeof data.categories !== 'object' || !Array.isArray(data.completed)) {
+      alert("That file isn't a Backlog backup.");
+      return;
+    }
+    if (!confirm('Replace everything on this device with the backup? Ticks and items here will be overwritten.')) return;
+    if (!data.version) data.version = 1;
+    if (data.version < MIGRATIONS.length + 1) data = runMigrations(data);
+    state.data = data;
+    saveData();
+    render();
+    alert('Backup restored.');
+  };
+  reader.readAsText(file);
 }
 
 function saveData() {
@@ -1113,8 +1209,23 @@ function renderContent() {
       ${state.data.completed.length === 0 ? '<div class="empty-state">Nothing yet. Get watching.</div>' : state.data.completed.map(item => `
         <div style="padding: 7px 0; border-bottom: 1px solid #0e0e16; font-size: 12px; color: #3a3a4a; text-decoration: line-through;">${escapeHtml(item)}</div>
       `).join('')}
+      <div class="backup-block">
+        <div class="backup-label">💾 Backup</div>
+        <div class="backup-hint">Your ticks only live on this device. Export a copy now and then, or to move them to another device.</div>
+        <div class="backup-row">
+          <button class="backup-btn" id="exportBtn">Export</button>
+          <button class="backup-btn" id="importBtn">Import</button>
+        </div>
+        <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+      </div>
       <button class="reset-btn" id="resetBtn">⚠️ Reset to default</button>
     `;
+    document.getElementById('exportBtn').addEventListener('click', exportBackup);
+    document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+    document.getElementById('importFile').addEventListener('change', e => {
+      if (e.target.files[0]) importBackup(e.target.files[0]);
+      e.target.value = '';
+    });
     document.getElementById('resetBtn').addEventListener('click', () => {
       if (confirm('Reset everything back to default? This cannot be undone.')) {
         state.data = JSON.parse(JSON.stringify(INITIAL_DATA));

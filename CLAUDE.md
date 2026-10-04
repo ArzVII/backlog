@@ -18,7 +18,7 @@ A personal media backlog tracker built for Aaron. It tracks shows, anime, manga,
 
 ## 2. Tech stack and architecture
 
-- **One self-contained `index.html`** (about 1,420 lines). Inline CSS and vanilla JS, no framework, no build step, no backend.
+- **One self-contained `index.html`** (about 1,530 lines). Inline CSS and vanilla JS, no framework, no build step, no backend.
 - **Storage:** `localStorage`, key `backlog-tracker-v4`. **Never change this key.** Changing it orphans all saved data. Versioning is handled inside the data instead (see section 3).
 - **PWA:** inline data-URI manifest, apple-touch-icon (gold "B" on near-black), and a blob-registered service worker for offline caching.
 - **Rendering:** a single `render()` that rebuilds tabs, stats and content from `state.data`.
@@ -26,7 +26,7 @@ A personal media backlog tracker built for Aaron. It tracks shows, anime, manga,
 ### Data shape
 ```js
 {
-  version: 11,
+  version: 12,
   pairings: [{ id, name, desc, items: [string] }],
   categories: {
     shows:    { label, items: [{ id, title, type, done, active?, onhold? }] },
@@ -74,6 +74,7 @@ A personal media backlog tracker built for Aaron. It tracks shows, anime, manga,
 | v9 | +Chrono Trigger (Adventure), +The Wire and My Dearest Self (Crime); added missing tickable items Liar Game, March Comes In Like a Lion, Chrono Trigger |
 | v10 | +Nippon Sangoku (Anime + Society/Revolution) |
 | v11 | +Kagurabachi (manga, priority), +Ys 1-8, +Resident Evil lineup |
+| v12 | +Widow's Bay, +House of the Dragon, +Silo S3 (shows), +Daemons of the Shadow Realm (anime); HotD into Society/Revolution, Silo into Sci-Fi, Daemons into Adventure + No.1s |
 
 ---
 
@@ -91,24 +92,25 @@ A personal media backlog tracker built for Aaron. It tracks shows, anime, manga,
 
 ## 5. Known limitations
 
-- **No sync between devices.** Phone and PC each have their own `localStorage`. Decision: the phone is the real tracker. Possible future fixes: export/import JSON buttons (easy) or a real backend like Supabase (bigger project).
+- **No sync between devices.** Phone and PC each have their own `localStorage`. Decision: the phone is the real tracker. Since v12 the ✅ Done tab has **Export / Import** backup buttons (JSON file; uses the iOS share sheet in the PWA). Import replaces all data on that device and runs migrations on older backups. Real sync would need a backend like Supabase (bigger project).
+- If stored data ever fails to parse, it is stashed under `backlog-tracker-v4-unreadable-<timestamp>` before defaults load, so it can be recovered.
 - PWAs cache hard. After a deploy, fully close and reopen the app (or delete and re-add the home screen icon if it refuses to update).
 - Vibe pairings are just strings. They are not linked to items, so a pairing can mention a title that isn't tickable. An audit was run at v9 and fixed the gaps, but this can drift. A future improvement would be linking pairing entries to item ids.
-- **Deployment status is unknown past a point.** Aaron confirmed deploying up to v5. v6 to v11 were built and handed over but may not all be live. If the live site's version is behind, deploying the latest file is safe: migrations catch it up.
+- Live site was confirmed on v11 on 2026-10-05 (tag `v11` in git is the rollback point before the game-layer work).
 
 ---
 
-## 6. Current pairings (v11)
+## 6. Current pairings (v12)
 
 1. 🗡️ **Dark Fantasy / Souls**: Elden Ring, Berserk, Dororo
 2. ⚔️ **Samurai / Honour**: Ghost of Tsushima, Vagabond, GAMARAN, Blue Eye Samurai, Shogun
 3. 🧠 **Psychological**: Persona 3 Reload, Monster, Homunculus, Hannibal, Mindhunter
 4. 🎭 **Identity / Becoming**: Disco Elysium, Persona 5 Royal, Mob Psycho 100, Bunny Girl Senpai, The OA, Severance, American Beauty, Fight Club, The Talented Mr Ripley
-5. 🌌 **Sci-Fi / Existential**: NieR: Automata, Detroit: Become Human, Fire Punch, All You Need Is Kill, Code Geass, Steins;Gate, Eureka Seven
+5. 🌌 **Sci-Fi / Existential**: NieR: Automata, Detroit: Become Human, Fire Punch, All You Need Is Kill, Code Geass, Steins;Gate, Eureka Seven, Silo
 6. 🕵️ **Crime / Gritty**: Yakuza 0, Sun-Ken Rock, My Dearest Self, Breaking Bad → BCS, The Wire
-7. 🏰 **Adventure + No.1s**: Kingdom Hearts 2 Critical, FMA Brotherhood / manga, Frieren, Magi, Chrono Trigger
+7. 🏰 **Adventure + No.1s**: Kingdom Hearts 2 Critical, FMA Brotherhood / manga, Frieren, Magi, Chrono Trigger, Daemons of the Shadow Realm
 8. 💔 **Healing / Reset**: Vinland Saga, March Comes In Like a Lion, A Silent Voice, BoJack, Erased, Gurren Lagann
-9. 🌍 **Society / Revolution**: Eden of the East, The Running Man, Squid Game, The Hunt (2020), 20th Century Boys, Mr. Robot, Andor, Liar Game, Nippon Sangoku, Cyberpunk 2077, society/corruption video essays
+9. 🌍 **Society / Revolution**: Eden of the East, The Running Man, Squid Game, The Hunt (2020), 20th Century Boys, Mr. Robot, Andor, Liar Game, Nippon Sangoku, House of the Dragon, Cyberpunk 2077, society/corruption video essays
 10. ⚽ **Sports**: Blue Lock (anime), Blue Lock, Ao Ashi, Be Blues, Diamond no Ace, Safety (Disney+)
 11. 🎮 **Childhood Reconnection**: Kingdom Hearts (KH2 + CoM + Re:Coded), Ocarina of Time, Pokémon ROMs, KH music on piano, throwback cartoons
 
@@ -122,9 +124,9 @@ Pairing ids are not contiguous (p10 to p13, p15, p16 were deleted). New pairings
 
 ---
 
-## 7. Item counts (v11 defaults)
+## 7. Item counts (v12 defaults)
 
-Shows 69 · Cartoons 12 · Anime 54 · Patreon 26 · Manga 40 · Games 60 · Movies 60 · Docs 4 · Misc 7 · Completed 22
+Shows 72 · Cartoons 12 · Anime 55 · Patreon 26 · Manga 40 · Games 60 · Movies 60 · Docs 4 · Misc 7 · Completed 22
 
 Notable groups: individual Pokémon ROM hacks (Renegade Platinum priority, then Refined Platinum, Xenoverse, Sors, Saiph, Definitive, Azure, Redux, Empire, Gamma Emerald, PokeMMO); Resident Evil (2002 Remake, RE2/3/4 Remakes, RE7, Village, Requiem; RE5/6/Code Veronica skipped until remakes exist).
 
@@ -134,8 +136,6 @@ Notable groups: individual Pokémon ROM hacks (Renegade Platinum priority, then 
 
 - **Design refresh:** a design brief (`Backlog_Design_Brief.md`) was written for Claude Design, aiming for "refined premium" (Linear / Things 3 feel: serif title, rounded rows, status pills, warmer palette) rather than flashy animation. Not built yet. Aaron felt the gain wasn't deep enough to justify the effort for now.
 - **"Start ONE thing" system:** a slot at the top for the single thing Aaron is starting today, with its reason. Aimed at the "I know I'll love it but can't start it" problem. Not built.
-- Pending additions discussed but not yet in the app: **Daemons of the Shadow Realm** (anime, Arakawa/FMA creator, fits Adventure + No.1s), **Widow's Bay** (show, folk-horror comedy), **House of the Dragon** (fits Society/Revolution), **Silo S3** (fits Sci-Fi/Existential). Paradise S2 is covered by the existing "Paradise w/ YourRage" item.
-- Export/import JSON for cross-device sync.
 - Aaron's mum suggested selling it. Assessment: not sellable without accounts, backend, sync and support, but strong as a portfolio piece. Aaron has floated accounts and community/forum features as long-term ideas, with the condition they stay sleek and not overwhelming.
 
 ---
@@ -148,6 +148,10 @@ Notable groups: individual Pokémon ROM hacks (Renegade Platinum priority, then 
 4. Wait ~30 seconds, fully close and reopen the app on the phone
 
 With Claude Code in the repo, the flow becomes: edit `index.html`, validate, commit and push.
+
+**Bigger features go on a branch first.** Vercel builds a preview URL for every branch, so Aaron can try it on his phone before it touches the real app (the preview is a different site, so it has its own empty data). Merge to `main` only once he is happy. Each release is tagged (`v11`, `v12`, ...) so any version can be restored.
+
+**Rollback safety rule:** new features must only *add* new keys to the data object and never change the shape of existing ones. Older code ignores keys it doesn't know and skips migrations when the data version is ahead, so rolling back keeps all ticks.
 
 ---
 
