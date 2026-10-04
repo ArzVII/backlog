@@ -256,7 +256,7 @@
 const STORAGE_KEY = 'backlog-tracker-v4';
 
 const INITIAL_DATA = {
-  version: 9,
+  version: 11,
   pairings: [
     { id: 'p1', name: '🗡️ Dark Fantasy / Souls', desc: "Elden Ring + Berserk + Dororo. Elden Ring's world IS Berserk.", items: ['Elden Ring','Berserk','Dororo'] },
     { id: 'p2', name: '⚔️ Samurai / Honour', desc: 'Ghost of Tsushima + Vagabond + Gamaran + Blue Eye Samurai/Shogun. Feudal Japan, swords, honour.', items: ['Ghost of Tsushima','Vagabond','GAMARAN','Blue Eye Samurai','Shogun'] },
@@ -266,7 +266,7 @@ const INITIAL_DATA = {
     { id: 'p6', name: '🕵️ Crime / Gritty', desc: 'Yakuza 0/Judgement + Sun-Ken Rock/Out + My Dearest Self + Breaking Bad → BCS + The Wire.', items: ['Yakuza 0','Sun-Ken Rock','My Dearest Self','Breaking Bad → BCS','The Wire'] },
     { id: 'p7', name: '🏰 Adventure + No.1s', desc: 'My peaks. KH2 (fav game ever) + FMA:B (fav anime ever, reading manga 1st time) + Frieren (the anime that dethroned it) + Magi (top 5, reading to see the ending) + Chrono Trigger.', items: ['Kingdom Hearts 2 Critical','FMA Brotherhood / manga','Frieren','Magi','Chrono Trigger'] },
     { id: 'p8', name: '💔 Healing / Reset', desc: 'Vinland Saga + March Comes In Like a Lion + A Silent Voice → BoJack → Erased → Gurren Lagann rewatch.', items: ['Vinland Saga','March Comes In Like a Lion','A Silent Voice','BoJack','Erased','Gurren Lagann'] },
-    { id: 'p9', name: '🌍 Society / Revolution', desc: 'Systems, power, revolution, who really runs things. Eden of the East + Running Man + Squid Game + The Hunt + 20th Century Boys + Mr. Robot + Andor + Liar Game + Cyberpunk 2077 + society/corruption video essays.', items: ['Eden of the East','The Running Man','Squid Game','The Hunt (2020)','20th Century Boys','Mr. Robot','Andor','Liar Game','Cyberpunk 2077','society/corruption video essays'] },
+    { id: 'p9', name: '🌍 Society / Revolution', desc: 'Systems, power, revolution, who really runs things. Eden of the East + Running Man + Squid Game + The Hunt + 20th Century Boys + Mr. Robot + Andor + Liar Game + Nippon Sangoku + Cyberpunk 2077 + society/corruption video essays.', items: ['Eden of the East','The Running Man','Squid Game','The Hunt (2020)','20th Century Boys','Mr. Robot','Andor','Liar Game','Nippon Sangoku','Cyberpunk 2077','society/corruption video essays'] },
     { id: 'p14', name: '⚽ Sports', desc: 'Pure competition, teamwork, the drive to be the best. Anime + manga + shows + movies. Catch up on Blue Lock + Ao Ashi together.', items: ['Blue Lock (anime)','Blue Lock','Ao Ashi','Be Blues','Diamond no Ace','Safety (Disney+)'] },
     { id: 'p17', name: '🎮 Childhood Reconnection', desc: 'Reclaiming the things that made me, me. KH, nostalgia, inner-kid stuff, Pokémon.', items: ['Kingdom Hearts (KH2 + CoM + Re:Coded)','Ocarina of Time','Pokémon ROMs','KH music on piano','throwback cartoons'] },
   ],
@@ -410,6 +410,7 @@ const INITIAL_DATA = {
       { id: 'a51', title: 'Orb', type: 'normal', done: false },
       { id: 'a52', title: 'A Silent Voice (movie)', type: 'normal', done: false },
       { id: 'a53', title: 'March Comes In Like a Lion', type: 'normal', done: false },
+      { id: 'a54', title: 'Nippon Sangoku', type: 'normal', done: false },
     ]},
     patreon: { label: '🎬 PATREON QUEUE', items: [
       { id: 'pt1', title: 'Mob Psycho w/ Roshi', type: 'normal', done: false },
@@ -479,6 +480,7 @@ const INITIAL_DATA = {
       { id: 'm35', title: 'Pokémon Adventures (past Kanto)', type: 'normal', done: false },
       { id: 'm36', title: "Mum's self-help black book", type: 'normal', done: false },
       { id: 'm37', title: 'Liar Game', type: 'normal', done: false },
+      { id: 'm38', title: 'Kagurabachi', type: 'priority', done: false },
     ]},
     games: { label: '🎮 GAMES', items: [
       { id: 'g0', title: 'FF7 Remake (FINISH!)', type: 'priority', done: false, active: true },
@@ -533,6 +535,14 @@ const INITIAL_DATA = {
       { id: 'g39', title: 'Exit 8', type: 'normal', done: false },
       { id: 'g40', title: 'Hollow Knight: Silksong (wishlist)', type: 'normal', done: false },
       { id: 'g41', title: 'Chrono Trigger', type: 'normal', done: false },
+      { id: 'g42', title: 'Ys 1-8', type: 'normal', done: false },
+      { id: 'g43', title: 'Resident Evil (2002 Remake)', type: 'normal', done: false },
+      { id: 'g44', title: 'Resident Evil 2 Remake', type: 'normal', done: false },
+      { id: 'g45', title: 'Resident Evil 3 Remake', type: 'normal', done: false },
+      { id: 'g46', title: 'Resident Evil 4 Remake', type: 'normal', done: false },
+      { id: 'g47', title: 'Resident Evil 7: Biohazard', type: 'normal', done: false },
+      { id: 'g48', title: 'Resident Evil Village', type: 'normal', done: false },
+      { id: 'g49', title: 'Resident Evil Requiem', type: 'normal', done: false },
     ]},
     movies: { label: '🎞️ MOVIES', items: [
       { id: 'mv1', title: 'Blade Runner 2049', type: 'priority', done: false },
@@ -903,6 +913,47 @@ const MIGRATIONS = [
           const exists = data.categories[cat].items.some(i => i.title === item.title);
           if (!exists) data.categories[cat].items.push(item);
         }
+      }
+    }
+    return data;
+  },
+  // Migration to v10: Add Nippon Sangoku to Anime + Society/Revolution vibe.
+  function migrateToV10(data) {
+    if (data.pairings) {
+      const soc = data.pairings.find(p => p.id === 'p9');
+      if (soc && !soc.items.includes('Nippon Sangoku')) {
+        // insert before the video essays entry for tidiness
+        const idx = soc.items.indexOf('Cyberpunk 2077');
+        if (idx !== -1) soc.items.splice(idx, 0, 'Nippon Sangoku');
+        else soc.items.push('Nippon Sangoku');
+        soc.desc = 'Systems, power, revolution, who really runs things. Eden of the East + Running Man + Squid Game + The Hunt + 20th Century Boys + Mr. Robot + Andor + Liar Game + Nippon Sangoku + Cyberpunk 2077 + society/corruption video essays.';
+      }
+    }
+    if (data.categories && data.categories.anime) {
+      const exists = data.categories.anime.items.some(i => i.title === 'Nippon Sangoku');
+      if (!exists) data.categories.anime.items.push({ id: 'a54', title: 'Nippon Sangoku', type: 'normal', done: false });
+    }
+    return data;
+  },
+  // Migration to v11: Add Kagurabachi (manga, priority), Ys 1-8 and Resident Evil lineup (games).
+  // RE scope: RE1-4 remakes (only ones that exist) + the modern run (7, Village, Requiem) per user's remakes-only rule.
+  function migrateToV11(data) {
+    if (!data.categories) return data;
+    const additions = [
+      { cat: 'manga', item: { id: 'm38', title: 'Kagurabachi', type: 'priority', done: false } },
+      { cat: 'games', item: { id: 'g42', title: 'Ys 1-8', type: 'normal', done: false } },
+      { cat: 'games', item: { id: 'g43', title: 'Resident Evil (2002 Remake)', type: 'normal', done: false } },
+      { cat: 'games', item: { id: 'g44', title: 'Resident Evil 2 Remake', type: 'normal', done: false } },
+      { cat: 'games', item: { id: 'g45', title: 'Resident Evil 3 Remake', type: 'normal', done: false } },
+      { cat: 'games', item: { id: 'g46', title: 'Resident Evil 4 Remake', type: 'normal', done: false } },
+      { cat: 'games', item: { id: 'g47', title: 'Resident Evil 7: Biohazard', type: 'normal', done: false } },
+      { cat: 'games', item: { id: 'g48', title: 'Resident Evil Village', type: 'normal', done: false } },
+      { cat: 'games', item: { id: 'g49', title: 'Resident Evil Requiem', type: 'normal', done: false } },
+    ];
+    for (const { cat, item } of additions) {
+      if (data.categories[cat]) {
+        const exists = data.categories[cat].items.some(i => i.title === item.title);
+        if (!exists) data.categories[cat].items.push(item);
       }
     }
     return data;
